@@ -4,7 +4,7 @@ Created on Sat Jan 18 17:36:38 2020
 
 @author: TiwarisUSA
 """
-import pandas as pd
+import pandas as pd1
 import twitter
 from datetime import datetime
 import time
