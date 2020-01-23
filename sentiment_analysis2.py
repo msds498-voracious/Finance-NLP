@@ -30,7 +30,7 @@ class TimelineMiner(object):
                     self.access_secret, self.consumer_key, 
                     self.consumer_secret))
         return bool(isinstance(self.auth, twitter.api.Twitter))
-        
+        trtrt
 
     def get_timeline(self, max=0):
         keywords = ['faang', 'apple', 'facebook', 'netflix', 'google', 'amazon']
