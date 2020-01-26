@@ -28,15 +28,22 @@ from twitterscraper.query import query_tweets
 # =============================================================================
 # from tweet import Tweet
 # =============================================================================
-import oauth_info as auth # our local file with the OAuth infos
+# import oauth_info as auth # our local file with the OAuth infos
 
+ct.consumer_key    = '3jmA1BqasLHfItBXj3KnAIGFB'
+ct.consumer_secret = 'imyEeVTctFZuK62QHmL1I0AUAMudg5HKJDfkx0oR7oFbFinbvA'
+ct.access_token  = '265857263-pF1DRxgIcxUbxEEFtLwLODPzD3aMl6d4zOKlMnme'
+ct.access_token_secret = 'uUFoOOGeNJfOYD3atlcmPtaxxniXxQzAU4ESJLopA1lbC'
+ct.num_of_tweets = 100
 
 style.use('ggplot')
-ct.consumer_key = auth.CONSUMER_KEY
-ct.consumer_secret = auth.CONSUMER_SECRET
-ct.access_token = auth.ACCESS_TOKEN
-ct.access_token_secret = auth.ACCESS_TOKEN_SECRET
-ct.num_of_tweets = 100
+# =============================================================================
+# ct.consumer_key = auth.CONSUMER_KEY
+# ct.consumer_secret = auth.CONSUMER_SECRET
+# ct.access_token = auth.ACCESS_TOKEN
+# ct.access_token_secret = auth.ACCESS_TOKEN_SECRET
+# =============================================================================
+
 tweet_df_complete = pd.DataFrame()
 
 def retrieving_tweets_polarity(symbol):
@@ -62,8 +69,6 @@ def retrieving_tweets_polarity(symbol):
     tweet_df = pd.DataFrame.from_records(tweet_list)    
     global_polarity = global_polarity / len(tweet_list)    
     return tweet_df, global_polarity
-
-
 
 if __name__ == "__main__":    
     actual_date = dt.date.today()
