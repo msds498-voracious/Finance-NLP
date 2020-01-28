@@ -37,7 +37,7 @@ ct.access_token_secret = 'uUFoOOGeNJfOYD3atlcmPtaxxniXxQzAU4ESJLopA1lbC'
 
 style.use('ggplot')
 
-ct.num_of_tweets = 10
+ct.num_of_tweets = 1000
 tweet_df_complete = pd.DataFrame()
 list_ = [' apple ', ' facebook ', ' netflix ', ' google ', ' fb ', ' appl ', ' amzn ', ' nflx ', ' googl ', ' amazon ' , ' fang ', ' faang ']
 mylist = ['apple']
