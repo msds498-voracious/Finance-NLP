@@ -28,55 +28,57 @@ from twitterscraper.query import query_tweets
 # =============================================================================
 # from tweet import Tweet
 # =============================================================================
-# import oauth_info as auth # our local file with the OAuth infos
 
 ct.consumer_key    = '3jmA1BqasLHfItBXj3KnAIGFB'
 ct.consumer_secret = 'imyEeVTctFZuK62QHmL1I0AUAMudg5HKJDfkx0oR7oFbFinbvA'
+
 ct.access_token  = '265857263-pF1DRxgIcxUbxEEFtLwLODPzD3aMl6d4zOKlMnme'
 ct.access_token_secret = 'uUFoOOGeNJfOYD3atlcmPtaxxniXxQzAU4ESJLopA1lbC'
-ct.num_of_tweets = 100
 
 style.use('ggplot')
-# =============================================================================
-# ct.consumer_key = auth.CONSUMER_KEY
-# ct.consumer_secret = auth.CONSUMER_SECRET
-# ct.access_token = auth.ACCESS_TOKEN
-# ct.access_token_secret = auth.ACCESS_TOKEN_SECRET
-# =============================================================================
 
+ct.num_of_tweets = 10
 tweet_df_complete = pd.DataFrame()
-
-def retrieving_tweets_polarity(symbol):
+list_ = [' apple ', ' facebook ', ' netflix ', ' google ', ' fb ', ' appl ', ' amzn ', ' nflx ', ' googl ', ' amazon ' , ' fang ', ' faang ']
+mylist = ['apple']
+def retrieving_tweets_polarity(name):
+    broker_screen_name = '@' + name
     auth = tweepy.OAuthHandler(ct.consumer_key, ct.consumer_secret)
     auth.set_access_token(ct.access_token, ct.access_token_secret)
-    user = tweepy.API(auth)
+    user = tweepy.API(auth, wait_on_rate_limit=True)
 
-    tweets = tweepy.Cursor(user.search, q=str(symbol), tweet_mode='extended', lang='en').items(ct.num_of_tweets)
+    tweets = tweepy.Cursor(user.user_timeline, screen_name = broker_screen_name, tweet_mode='extended', lang='en').items(ct.num_of_tweets)
 
     tweet_list = []
     global_polarity = 0
     for tweet in tweets:
-        tw = tweet.full_text
-        print (tw)
+        tw = tweet.full_text        
         blob = TextBlob(tw)
-        polarity = 0
-        for sentence in blob.sentences:
-            polarity += sentence.sentiment.polarity
-            print (polarity)
-            global_polarity += sentence.sentiment.polarity
-            tweet_list.append([tweet.created_at, tw, polarity, symbol])
-            
+        polarity = 0                      
+        for word in mylist: 
+            if any(word in tw):
+                polarity += blob.sentiment.polarity
+                global_polarity += blob.sentiment.polarity
+                tweet_list.append([tweet.created_at,broker_screen_name, tw, polarity])
+            else: 
+                tweet_list.append([tweet.created_at,broker_screen_name, tw, polarity])
     tweet_df = pd.DataFrame.from_records(tweet_list)    
-    global_polarity = global_polarity / len(tweet_list)    
+    if not tweet_df.empty: 
+        global_polarity = global_polarity / len(tweet_list)    
+    else: 
+        global_polarity = 0
     return tweet_df, global_polarity
+
+
 
 if __name__ == "__main__":    
     actual_date = dt.date.today()
     past_date = actual_date - dt.timedelta(days=365 * 3)
     actual_date = actual_date.strftime("%Y-%m-%d")
     past_date = past_date.strftime("%Y-%m-%d")
-    for symbol in ['apple', 'facebook', 'netflix', 'google']:
-        tweet_df, global_polarity = retrieving_tweets_polarity(symbol)
+    stock_broker_list =pd.read_csv('micheal_2nd_list.csv', header = None)
+    stock_broker_list.columns = ['broker_names']    
+    for broker_name in stock_broker_list.broker_names: 
+        tweet_df, global_polarity = retrieving_tweets_polarity(broker_name)
         tweet_df_complete= pd.concat([tweet_df_complete, tweet_df], axis=0)
-        if symbol == 'google':
-            tweet_df_complete.to_csv('tweeter_raw_data.csv')
+    tweet_df_complete.to_csv('all_tweets.csv')  
