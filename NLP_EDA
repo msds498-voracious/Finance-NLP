@@ -1,0 +1,86 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jan 29 06:26:55 2020
+
+@author: glawson
+"""
+
+#Packages for EDA
+import pandas as pd
+import matplotlib.pyplot as plt
+
+#Display settings
+pd.set_option('display.max_rows',15)
+pd.set_option('display.max_columns',20)
+
+#Import data
+all_tweets = pd.read_csv('G:/My Drive/MSPA/MSDS 498 - Capstone/Data/Finance-NLP-master/all_tweets.csv')
+
+#Look at data summary and shape
+print(all_tweets.info())
+print(all_tweets.head())
+print(all_tweets.tail())
+print(all_tweets.columns)
+
+print('Number of tweets: ',len(all_tweets))
+
+#**********************************************************************
+#Look at tweets by person
+counts_by_person = all_tweets.groupby(['screen_name']).size().sort_values(ascending=False)
+person = counts_by_person.index
+
+print('Mean tweets per person: ',counts_by_person.mean())
+print('Median tweets per person: ',counts_by_person.median())
+
+#Plot number of tweets per person
+fig, ax = plt.subplots(figsize=(15, 4))
+ax.bar(person,counts_by_person, color='g')
+plt.title('Total Tweets per Person')
+plt.ylabel('Number of Tweets')
+plt.xlabel('Person')
+plt.xticks(rotation=90)
+plt.show()
+
+#Plot number of tweets per person
+fig, ax = plt.subplots(figsize=(15, 4))
+c='green'
+ax.boxplot(counts_by_person, vert=False, patch_artist=True, notch=True,
+            boxprops=dict(facecolor=c, color=c),
+            capprops=dict(color=c),
+            whiskerprops=dict(color=c)
+            )
+plt.title('Boxplot of Tweets')
+plt.xlabel('Number of Tweets')
+plt.show()
+
+#**********************************************************************
+#Look at tweets by FAANG Stock
+
+tweets_comb_stock = pd.DataFrame(columns=('screen_name','appl','fb','amzn','nflx','googl','faang','non-faang'))
+tweets_comb_stock['screen_name']=all_tweets['screen_name']
+tweets_comb_stock['appl']=all_tweets[' appl ']+all_tweets[' apple ']
+tweets_comb_stock['fb']=all_tweets[' fb ']+all_tweets[' facebook ']
+tweets_comb_stock['amzn']=all_tweets[' amzn ']+all_tweets[' amazon ']
+tweets_comb_stock['nflx']=all_tweets[' nflx ']+all_tweets[' netflix ']
+tweets_comb_stock['googl']=all_tweets[' googl ']+all_tweets[' google ']
+tweets_comb_stock['faang']=all_tweets[' fang ']+all_tweets[' faang ']
+
+#Create encoding for tweets that don't have a stock reference
+for row in range(len(tweets_comb_stock)):
+    if tweets_comb_stock.loc[row, ['appl','fb','amzn','nflx','googl','faang']].sum() == 0:
+        tweets_comb_stock.loc[row, 'non-faang']=1
+    else: 
+        tweets_comb_stock.loc[row, 'non-faang']=0
+    print(tweets_comb_stock.loc[row])
+
+tweets_comb_stock.head()
+
+#Plot number of tweets per person
+fig, ax = plt.subplots(figsize=(15, 4))
+stock_names=('appl','fb','amzn','nflx','googl','faang','non-faang')
+ax.bar(stock_names,tweets_comb_stock[['appl','fb','amzn','nflx','googl','faang','non-faang']].sum(), color='g')
+plt.title('Total Tweets per Stock')
+plt.ylabel('Number of Tweets')
+plt.xlabel('Stock')
+plt.xticks(rotation=90)
+plt.show()
