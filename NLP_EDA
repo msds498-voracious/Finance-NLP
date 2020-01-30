@@ -84,3 +84,14 @@ plt.ylabel('Number of Tweets')
 plt.xlabel('Stock')
 plt.xticks(rotation=90)
 plt.show()
+
+
+#Sybset tweets by stock names 
+apple_tweets = pd.concat([all_tweets[all_tweets[' appl '] == 1], all_tweets[all_tweets[' apple '] == 1]], axis = 0)
+apple_tweets['date'] = pd.to_datetime(apple_tweets['date'])
+apple_tweets.index = apple_tweets['date'] 
+g = apple_tweets.resample('D').sum()
+g = g[(g[['Unnamed: 0']] != 0).all(axis=1)]
+
+for i in range(g.shape[0]):
+    plt.axvline(g.index[i])
