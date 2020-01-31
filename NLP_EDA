@@ -8,13 +8,14 @@ Created on Wed Jan 29 06:26:55 2020
 #Packages for EDA
 import pandas as pd
 import matplotlib.pyplot as plt
+import oauth_info as auth
 
 #Display settings
 pd.set_option('display.max_rows',15)
 pd.set_option('display.max_columns',20)
 
 #Import data
-all_tweets = pd.read_csv('G:/My Drive/MSPA/MSDS 498 - Capstone/Data/Finance-NLP-master/all_tweets.csv')
+all_tweets = pd.read_csv('all_tweets.csv')
 
 #Look at data summary and shape
 print(all_tweets.info())
@@ -71,7 +72,7 @@ for row in range(len(tweets_comb_stock)):
         tweets_comb_stock.loc[row, 'non-faang']=1
     else: 
         tweets_comb_stock.loc[row, 'non-faang']=0
-    print(tweets_comb_stock.loc[row])
+    
 
 tweets_comb_stock.head()
 
@@ -85,13 +86,23 @@ plt.xlabel('Stock')
 plt.xticks(rotation=90)
 plt.show()
 
-
+#get apple specific tweets
 #Sybset tweets by stock names 
 apple_tweets = pd.concat([all_tweets[all_tweets[' appl '] == 1], all_tweets[all_tweets[' apple '] == 1]], axis = 0)
 apple_tweets['date'] = pd.to_datetime(apple_tweets['date'])
 apple_tweets.index = apple_tweets['date'] 
-g = apple_tweets.resample('D').sum()
-g = g[(g[['Unnamed: 0']] != 0).all(axis=1)]
+apple_tweets_trunc= apple_tweets.resample('D').sum()
+apple_tweets_trunc['date2'] = apple_tweets_trunc.index
+apple_tweets_trunc.rename(columns={'Unnamed: 0': 'sum_tweets'}, inplace = True) 
+apple_tweets_trunc = apple_tweets_trunc[['date2', 'sum_tweets']]
+# get finance data
+#you need to specify your own Quandl api key in the oauth_info.py document as QUANDL_KEY
+import quandl
+quandl.ApiConfig.api_key = auth.QUANDL_KEY
 
-for i in range(g.shape[0]):
-    plt.axvline(g.index[i])
+# get apple finance data
+aapl_df1 = quandl.get('WIKI/AAPL')
+aapl_df1['date1'] = aapl_df1.index
+#merge in the apple_tweets_count with the historical price data
+aapl_df1= aapl_df1.merge(apple_tweets_trunc, left_on = 'date1', right_on= 'date2')
+aapl_df1.plot(x='date1', y =(['Adj. Close','sum_tweets']))
