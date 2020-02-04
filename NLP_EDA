@@ -8,13 +8,22 @@ Created on Wed Jan 29 06:26:55 2020
 #Packages for EDA
 import pandas as pd
 import matplotlib.pyplot as plt
-import oauth_info as auth
+import matplotlib.dates as mdates
+from datetime import timedelta 
+
+#for now use this to get latest yahoo prices
+!pip install yahoo-historical
+#https://github.com/AndrewRPorter/yahoo-historical
+from yahoo_historical import Fetcher
 
 #Display settings
 pd.set_option('display.max_rows',15)
 pd.set_option('display.max_columns',20)
 
-#Import data
+#**********************************************************************
+#IMPORT TWEET DATA 
+
+#Import data from spreadsheet saved locally
 all_tweets = pd.read_csv('all_tweets.csv')
 
 #Look at data summary and shape
@@ -25,15 +34,54 @@ print(all_tweets.columns)
 
 print('Number of tweets: ',len(all_tweets))
 
+#Convert dates to datetime format
+all_tweets['date'] = pd.to_datetime(all_tweets['date'])
+
 #**********************************************************************
-#Look at tweets by person
+#IMPORT STOCK DATA 
+
+ticker_fb = Fetcher("FB", [2015,1,1])
+fb_df=ticker_fb.get_historical()
+fb_df.head()
+fb_df.tail()
+
+ticker_aapl = Fetcher("AAPL", [2015,1,1])
+aapl_df=ticker_aapl.get_historical()
+aapl_df.head()
+aapl_df.tail()
+
+ticker_amzn = Fetcher("AMZN", [2015,1,1])
+amzn_df=ticker_amzn.get_historical()
+amzn_df.head()
+amzn_df.tail()
+
+ticker_nflx = Fetcher("NFLX", [2015,1,1])
+nflx_df=ticker_nflx.get_historical()
+nflx_df.head()
+nflx_df.tail()
+
+ticker_googl = Fetcher("GOOGL", [2015,1,1])
+googl_df=ticker_googl.get_historical()
+googl_df.head()
+googl_df.tail()
+
+fb_df['Date'] = pd.to_datetime(fb_df['Date'])
+aapl_df['Date'] = pd.to_datetime(aapl_df['Date'])
+amzn_df['Date'] = pd.to_datetime(amzn_df['Date'])
+nflx_df['Date'] = pd.to_datetime(nflx_df['Date'])
+googl_df['Date'] = pd.to_datetime(googl_df['Date'])
+#**********************************************************************
+#ALL TWEETS BY PERSON
+
+#Group by screenname
 counts_by_person = all_tweets.groupby(['screen_name']).size().sort_values(ascending=False)
 person = counts_by_person.index
 
+#Averages for all tweets
 print('Mean tweets per person: ',counts_by_person.mean())
 print('Median tweets per person: ',counts_by_person.median())
 
-#Plot number of tweets per person
+#Plot number of total tweets per person
 fig, ax = plt.subplots(figsize=(15, 4))
 ax.bar(person,counts_by_person, color='g')
 plt.title('Total Tweets per Person')
@@ -42,7 +90,7 @@ plt.xlabel('Person')
 plt.xticks(rotation=90)
 plt.show()
 
-#Plot number of tweets per person
+#Box and whisker plot of number of total tweets per person
 fig, ax = plt.subplots(figsize=(15, 4))
 c='green'
 ax.boxplot(counts_by_person, vert=False, patch_artist=True, notch=True,
@@ -50,17 +98,16 @@ ax.boxplot(counts_by_person, vert=False, patch_artist=True, notch=True,
             capprops=dict(color=c),
             whiskerprops=dict(color=c)
             )
-plt.title('Boxplot of Tweets')
+plt.title('Boxplot of Total Tweets')
 plt.xlabel('Number of Tweets')
 plt.show()
 
-#**********************************************************************
-#Look at tweets by FAANG Stock
 
-tweets_comb_stock = pd.DataFrame(columns=('screen_name','appl','fb','amzn','nflx','googl','faang','non-faang'))
-tweets_comb_stock['screen_name']=all_tweets['screen_name']
-tweets_comb_stock['appl']=all_tweets[' appl ']+all_tweets[' apple ']
+#Limit to only FAANG stock tweets
+tweets_comb_stock = pd.DataFrame(columns=('date','screen_name','polarity','fb','appl','amzn','nflx','googl','faang','non-faang'))
+tweets_comb_stock[['date','screen_name','polarity']]=all_tweets[['date','screen_name','polarity']]
 tweets_comb_stock['fb']=all_tweets[' fb ']+all_tweets[' facebook ']
+tweets_comb_stock['appl']=all_tweets[' appl ']+all_tweets[' apple ']
 tweets_comb_stock['amzn']=all_tweets[' amzn ']+all_tweets[' amazon ']
 tweets_comb_stock['nflx']=all_tweets[' nflx ']+all_tweets[' netflix ']
 tweets_comb_stock['googl']=all_tweets[' googl ']+all_tweets[' google ']
@@ -68,24 +115,329 @@ tweets_comb_stock['faang']=all_tweets[' fang ']+all_tweets[' faang ']
 
 #Create encoding for tweets that don't have a stock reference
 for row in range(len(tweets_comb_stock)):
-    if tweets_comb_stock.loc[row, ['appl','fb','amzn','nflx','googl','faang']].sum() == 0:
+    if tweets_comb_stock.loc[row, ['fb','appl','amzn','nflx','googl','faang']].sum() == 0:
         tweets_comb_stock.loc[row, 'non-faang']=1
     else: 
         tweets_comb_stock.loc[row, 'non-faang']=0
-    
+    #print(tweets_comb_stock.loc[row])
 
 tweets_comb_stock.head()
 
-#Plot number of tweets per person
+#New dataframe that holds only FAANG tweets
+faang_tweets = tweets_comb_stock[tweets_comb_stock['non-faang'] !=1]
+faang_tweets = faang_tweets.sort_values(by=['date'])
+faang_tweets.head()
+
+#Look at tweets by person with only FAANG stock tweets
+counts_by_person_faang = faang_tweets.groupby(['screen_name']).size().sort_values(ascending=False)
+person_faang = counts_by_person_faang.index
+
+#Averages for FAANG tweets
+print('Mean FAANG tweets per person: ',counts_by_person_faang.mean())
+print('Median FAANG tweets per person: ',counts_by_person_faang.median())
+
+#Plot number of FAANG tweets per person
 fig, ax = plt.subplots(figsize=(15, 4))
-stock_names=('appl','fb','amzn','nflx','googl','faang','non-faang')
-ax.bar(stock_names,tweets_comb_stock[['appl','fb','amzn','nflx','googl','faang','non-faang']].sum(), color='g')
+ax.bar(person_faang,counts_by_person_faang, color='g')
+plt.title('Total FAANG Tweets per Person')
+plt.ylabel('Number of Tweets')
+plt.xlabel('Person')
+plt.xticks(rotation=90)
+plt.show()
+
+#Box and whisker plot of number of FAANG tweets per person
+fig, ax = plt.subplots(figsize=(15, 4))
+c='green'
+ax.boxplot(counts_by_person_faang, vert=False, patch_artist=True, notch=True,
+            boxprops=dict(facecolor=c, color=c),
+            capprops=dict(color=c),
+            whiskerprops=dict(color=c)
+            )
+plt.title('Boxplot of FAANG Tweets')
+plt.xlabel('Number of Tweets')
+plt.show()
+
+
+#**********************************************************************
+#TWEETS BY FAANG STOCK
+
+#Plot total number of tweets per stock
+fig, ax = plt.subplots(figsize=(15, 4))
+stock_names=('fb','appl','amzn','nflx','googl','faang','non-faang')
+ax.bar(stock_names,tweets_comb_stock[['fb','appl','amzn','nflx','googl','faang','non-faang']].sum(), color='g')
 plt.title('Total Tweets per Stock')
 plt.ylabel('Number of Tweets')
 plt.xlabel('Stock')
 plt.xticks(rotation=90)
 plt.show()
 
+#Plot number of FAANG tweets per stock
+fig, ax = plt.subplots(figsize=(15, 4))
+stock_names=('fb','appl','amzn','nflx','googl','faang')
+ax.bar(stock_names,faang_tweets[['fb','appl','amzn','nflx','googl','faang']].sum(), color='g')
+plt.title('Total FAANG Tweets per Stock')
+plt.ylabel('Number of Tweets')
+plt.xlabel('Stock')
+plt.xticks(rotation=90)
+plt.show()
+
+
+#**********************************************************************
+#FAANG STOCK TWEETS BY DATE
+
+#Set date plotting parameters
+years = mdates.YearLocator()   # every year
+months = mdates.MonthLocator()  # every month
+years_fmt = mdates.DateFormatter('%Y')
+
+#Define plot for FAANG tweets by date
+def plot_tweets_by_date (stock_ticker):
+    data_tweets = faang_tweets[faang_tweets[stock_ticker]==1]
+    data_tweets.index = data_tweets['date']
+    data_tweets_trunc = data_tweets.resample('D').sum()
+    
+    fig, ax = plt.subplots(figsize=(15, 4))
+    ax.plot(data_tweets_trunc.index,data_tweets_trunc[stock_ticker], color='g')
+    ax.xaxis.set_major_locator(mdates.MonthLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %y'))
+    plt.xticks(rotation=90)
+    plt.title('Number of %r Tweets by Date' %stock_ticker)
+    plt.ylabel('Number of Tweets')
+    plt.xlabel('Date (Month, Year)')
+    plt.show()
+
+#Plot all FAANG stock tweets by date   
+for stock in stock_names:
+    plot_tweets_by_date(stock)  
+
+
+#**********************************************************************
+#FAANG STOCK TWEETS BY DATE
+
+#Define function to plot all FAANG stock historical data on graph with tweets    
+def plot_tweet_hist_by_date (stock_ticker, stock_df):
+    #Prep the Tweet data
+    data_tweets = faang_tweets[faang_tweets[stock_ticker]==1]
+    data_tweets.index = data_tweets['date']
+    data_tweets_trunc = data_tweets.resample('D').sum()
+    
+    #Prep the historic price data
+    start_date = '2017-07-01'
+    end_date = '2020-01-30'
+    mask = (stock_df['Date'] > start_date) & (stock_df['Date'] <= end_date)
+    data_hist = stock_df.loc[mask]
+    
+    #Plot historic stock data
+    fig, ax1 = plt.subplots(figsize=(15, 4))
+    lgnd1 = ax1.plot(data_hist['Date'], data_hist['Close'])
+    
+    #x_axis parameters and titles
+    ax1.set_ylabel('Price ($)')
+    ax1.xaxis.set_major_locator(mdates.MonthLocator())
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter('%b %y'))
+    plt.title('Number of %r Tweets and Stock Price by Date' %stock_ticker)
+    plt.xticks(rotation=90)
+    plt.xlabel('Date (Month, Year)')
+    
+    #Plot Tweet data on same plot
+    ax2 = ax1.twinx()
+    lgnd2 = ax2.plot(data_tweets_trunc.index,data_tweets_trunc[stock_ticker], color='g')
+    ax2.set_ylabel('Number of Tweets')
+        
+    #Added a legend
+    lns = lgnd1+lgnd2
+    labs = ['Close', 'Tweet Volume']
+    ax1.legend(lns, labs, loc=0)
+    
+    #Show the plot
+    plt.show()    
+
+#Plot all
+df = [fb_df, aapl_df, amzn_df, nflx_df, googl_df]    
+for stock, df in zip(stock_names, df): 
+    #print(stock)
+    #print(df.head())
+    plot_tweet_hist_by_date (stock, df)
+
+    
+#**********************************************************************
+#FAANG STOCK MEAN SENTIMENT BY DATE
+
+#Define function to plot all FAANG stock historical data on graph with tweet sentiment   
+def plot_sent_hist_by_date (stock_ticker, stock_df):
+    #Prep the Tweet data
+    data_tweets = faang_tweets[faang_tweets[stock_ticker]==1]
+    data_tweets.index = data_tweets['date']
+    data_tweets_trunc = data_tweets.resample('D').mean()
+    
+    #Prep the historic price data
+    start_date = '2017-07-01'
+    end_date = '2020-01-30'
+    mask = (stock_df['Date'] > start_date) & (stock_df['Date'] <= end_date)
+    data_hist = stock_df.loc[mask]
+    
+    #Plot historic stock data
+    fig, ax1 = plt.subplots(figsize=(15, 4))
+    lgnd1 = ax1.plot(data_hist['Date'], data_hist['Close'])
+    
+    #x_axis parameters and titles
+    ax1.set_ylabel('Price ($)')
+    ax1.xaxis.set_major_locator(mdates.MonthLocator())
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter('%b %y'))
+    plt.title('Mean %r Tweet Sentiment and Stock Price by Date' %stock_ticker)
+    plt.xticks(rotation=90)
+    plt.xlabel('Date (Month, Year)')
+        
+    #Plot Tweet data on same plot
+    ax2 = ax1.twinx()
+    lgnd2 = ax2.plot(data_tweets_trunc.index,data_tweets_trunc['polarity'], color='g')
+    ax2.set_ylabel('Number of Tweets')
+    ax2.axhline(y=0, color='k')
+        
+    #Added a legend
+    lns = lgnd1+lgnd2
+    labs = ['Close', 'Tweet Volume']
+    ax1.legend(lns, labs, loc=0)
+    
+    #Show the plot
+    plt.show()    
+
+#Plot all
+df = [fb_df, aapl_df, amzn_df, nflx_df, googl_df]    
+for stock, df in zip(stock_names, df): 
+    plot_sent_hist_by_date (stock, df)   
+    
+#**********************************************************************
+#FAANG STOCK MEAN SENTIMENT RETURNS
+
+#Define function to plot all FAANG stock historical data on graph with tweet sentiment   
+# =============================================================================
+# def plot_sent_return (stock_ticker, stock_df):
+#     #Prep the Tweet data
+#     data_tweets = faang_tweets[faang_tweets[stock_ticker]==1]
+#     data_tweets.index = data_tweets['date']
+#     data_tweets_trunc = data_tweets.resample('D').mean()
+#     
+#     #Prep the historic price data
+#     start_date = '2017-07-01'
+#     end_date = '2020-01-30'
+#     mask = (stock_df['Date'] > start_date) & (stock_df['Date'] <= end_date)
+#     data_hist = stock_df.loc[mask]
+#     
+#     for date in data_tweets_trunc:
+#         print(data_hist.loc[date])
+#     
+# #Plot all
+# df = [fb_df, aapl_df, amzn_df, nflx_df, googl_df]    
+# for stock, df in zip(stock_names, df): 
+#     print(stock)
+#     plot_sent_return (stock, df)   
+# =============================================================================
+
+
+def plot_sent_return (stock_ticker, stock_df):
+    data_tweets = faang_tweets[faang_tweets[stock_ticker]==1]
+    data_tweets.index = data_tweets['date']
+    data_tweets_trunc = data_tweets.resample('D').mean()
+    data_tweets_trunc = data_tweets_trunc[data_tweets_trunc[stock_ticker].notnull()]
+    
+    #Prep the historic price data
+    start_date = '2017-07-01'
+    end_date = '2020-01-30'
+    mask = (stock_df['Date'] > start_date) & (stock_df['Date'] <= end_date)
+    data_hist = stock_df.loc[mask]
+    data_hist.index = data_hist['Date']
+    
+    polarity_1d = []
+    delta_p_1d = []
+    polarity_10d = []
+    delta_p_10d = []
+    polarity_30d = []
+    delta_p_30d = []
+    
+    for date in data_tweets_trunc.index:
+        #print(data_hist.loc[date])
+        try:
+            pol = data_tweets_trunc.loc[date, ['polarity']].max()
+            del_p = data_hist.loc[date + timedelta(days=1)].Close - data_hist.loc[date].Close
+            polarity_1d.append(pol)
+            delta_p_1d.append(del_p)
+            #delta_p = data_hist.loc[date + timedelta(days=1)].Close - data_hist.loc[date].Close
+            #sentiment = data_tweets_trunc.loc[date, ['polarity']]
+            #print(data_hist.loc[date].Close)
+            #print(data_hist.loc[date])
+        except:
+            continue
+    
+    for date in data_tweets_trunc.index:
+        #print(data_hist.loc[date])
+        try:
+            pol = data_tweets_trunc.loc[date, ['polarity']].max()
+            del_p = data_hist.loc[date + timedelta(days=10)].Close - data_hist.loc[date].Close
+            polarity_10d.append(pol)
+            delta_p_10d.append(del_p)
+            #delta_p = data_hist.loc[date + timedelta(days=1)].Close - data_hist.loc[date].Close
+            #sentiment = data_tweets_trunc.loc[date, ['polarity']]
+            #print(data_hist.loc[date].Close)
+            #print(data_hist.loc[date])
+        except:
+            continue
+        
+    for date in data_tweets_trunc.index:
+        #print(data_hist.loc[date])
+        try:
+            pol = data_tweets_trunc.loc[date, ['polarity']].max()
+            del_p = data_hist.loc[date + timedelta(days=30)].Close - data_hist.loc[date].Close
+            polarity_30d.append(pol)
+            delta_p_30d.append(del_p)
+            #delta_p = data_hist.loc[date + timedelta(days=1)].Close - data_hist.loc[date].Close
+            #sentiment = data_tweets_trunc.loc[date, ['polarity']]
+            #print(data_hist.loc[date].Close)
+            #print(data_hist.loc[date])
+        except:
+            continue
+    
+    plt.scatter(polarity_1d, delta_p_1d)
+    plt.title('Correlation of %r Sentiment Polarity and 1-Day Return'%stock_ticker)
+    plt.xlabel('Sentiment Polarity')
+    plt.ylabel('Return ($)')
+    plt.axhline(y=0)
+    plt.show()
+    
+    plt.scatter(polarity_10d, delta_p_10d)
+    plt.title('Correlation of %r Sentiment Polarity and 10-Day Return'%stock_ticker)
+    plt.xlabel('Sentiment Polarity')
+    plt.ylabel('Return ($)')
+    plt.axhline(y=0)
+    plt.show()
+    
+    plt.scatter(polarity_30d, delta_p_30d)
+    plt.title('Correlation of %r Sentiment Polarity and 30-Day Return'%stock_ticker)
+    plt.xlabel('Sentiment Polarity')
+    plt.ylabel('Return ($)')
+    plt.axhline(y=0)
+    plt.show()
+    
+#Plot all
+df = [fb_df, aapl_df, amzn_df, nflx_df, googl_df]    
+for stock, df in zip(stock_names, df): 
+    print(stock)
+    plot_sent_return (stock, df)    
+
+
+##############################################################################
+#Code from Aniruddha
+    
+#Sybset tweets by stock names 
+apple_tweets = pd.concat([all_tweets[all_tweets[' appl '] == 1], all_tweets[all_tweets[' apple '] == 1]], axis = 0)
+apple_tweets['date'] = pd.to_datetime(apple_tweets['date'])
+apple_tweets.index = apple_tweets['date'] 
+g = apple_tweets.resample('D').sum()
+g = g[(g[['Unnamed: 0']] != 0).all(axis=1)]
+
+for i in range(g.shape[0]):
+    plt.axvline(g.index[i])
+ 
 #get apple specific tweets
 #Sybset tweets by stock names 
 apple_tweets = pd.concat([all_tweets[all_tweets[' appl '] == 1], all_tweets[all_tweets[' apple '] == 1]], axis = 0)
@@ -98,10 +450,10 @@ apple_tweets_trunc = apple_tweets_trunc[['date2', 'sum_tweets']]
 # get finance data
 #you need to specify your own Quandl api key in the oauth_info.py document as QUANDL_KEY
 import quandl
-quandl.ApiConfig.api_key = auth.QUANDL_KEY
+#quandl.ApiConfig.api_key = auth.QUANDL_KEY
 
 # get apple finance data
-aapl_df1 = quandl.get('WIKI/AAPL')
+aapl_df1 = quandl.get('WIKI/AAPL', start_date="2017-07-01", end_date="2020-01-31")
 aapl_df1['date1'] = aapl_df1.index
 #merge in the apple_tweets_count with the historical price data
 aapl_df1= aapl_df1.merge(apple_tweets_trunc, left_on = 'date1', right_on= 'date2')
