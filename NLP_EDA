@@ -580,9 +580,6 @@ for stock in stock_names:
     
     print('\nBest Negative Correlation for 30-day Return')
     print(df.nsmallest(5, ['Corr_30d']))
-    
-    print('\nBest Positive Correlation for 1-day Return')
-    print(df.nlargest(5, ['Corr_30d']))
 
 
 
