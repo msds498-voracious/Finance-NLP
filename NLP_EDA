@@ -35,13 +35,6 @@ pd.set_option('display.width', 200)
 
 
 #**********************************************************************
-#SET DATE RANGE FOR ANALYSIS
-#Set date range to make sure stock and tweet data line up
-start_date = '2010-01-01'
-end_date = '2020-01-30'
-
-
-#**********************************************************************
 #IMPORT TWEET DATA 
 
 #Import data from spreadsheet saved locally
@@ -393,6 +386,10 @@ for stock in stock_names:
 
 #Define function to plot all FAANG stock historical data on graph with tweets    
 def plot_tweet_hist_by_date (stock_ticker, stock_df):
+    #Set date range to make sure stock and tweet data line up
+    start_date = '2010-01-01'
+    end_date = '2020-01-30'
+
     #Prep the Tweet data
     data_tweets = faang_tweets[faang_tweets[stock_ticker]==1]
     data_tweets.index = data_tweets['date']
@@ -441,6 +438,10 @@ for stock, df in zip(stock_names, df):
 
 #Define function to plot all FAANG stock historical data on graph with tweet sentiment   
 def plot_sent_hist_by_date (stock_ticker, stock_df):
+    #Set date range to make sure stock and tweet data line up
+    start_date = '2010-01-01'
+    end_date = '2020-01-30'
+    
     #Prep the Tweet data
     data_tweets = faang_tweets[faang_tweets[stock_ticker]==1]
     data_tweets.index = data_tweets['date']
@@ -489,6 +490,10 @@ for stock, df in zip(stock_names, df):
 
 #Define function to plot all FAANG stock historical data on graph with tweet likes  
 def plot_sent_hist_by_date (stock_ticker, stock_df):
+    #Set date range to make sure stock and tweet data line up
+    start_date = '2010-01-01'
+    end_date = '2020-01-30'
+    
     #Prep the Tweet data
     data_tweets = faang_tweets[faang_tweets[stock_ticker]==1]
     data_tweets.index = data_tweets['date']
@@ -537,6 +542,10 @@ for stock, df in zip(stock_names, df):
 
 #Define function to plot all FAANG stock historical data on graph with tweet replies   
 def plot_sent_hist_by_date (stock_ticker, stock_df):
+    #Set date range to make sure stock and tweet data line up
+    start_date = '2010-01-01'
+    end_date = '2020-01-30'
+    
     #Prep the Tweet data
     data_tweets = faang_tweets[faang_tweets[stock_ticker]==1]
     data_tweets.index = data_tweets['date']
@@ -585,6 +594,10 @@ for stock, df in zip(stock_names, df):
 
 #Define function to plot all FAANG stock historical data on graph with tweet retweets   
 def plot_sent_hist_by_date (stock_ticker, stock_df):
+    #Set date range to make sure stock and tweet data line up
+    start_date = '2010-01-01'
+    end_date = '2020-01-30'
+    
     #Prep the Tweet data
     data_tweets = faang_tweets[faang_tweets[stock_ticker]==1]
     data_tweets.index = data_tweets['date']
@@ -645,6 +658,10 @@ stock_tick = []
     
 #Define function to plot all FAANG stock historical data on graph with tweet sentiment   
 def plot_sent_return (stock_ticker, stock_df):
+    #Set date range to make sure stock and tweet data line up
+    start_date = '2010-01-01'
+    end_date = '2020-01-30'
+    
     #Record Stock Tick
     stock_tick.append(stock_ticker)
     
@@ -764,6 +781,10 @@ stock_tick = []
     
 #Define function to plot all FAANG stock historical data on graph with tweet likes  
 def plot_sent_return (stock_ticker, stock_df):
+    #Set date range to make sure stock and tweet data line up
+    start_date = '2010-01-01'
+    end_date = '2020-01-30'
+    
     #Record Stock Tick
     stock_tick.append(stock_ticker)
     
@@ -883,6 +904,10 @@ stock_tick = []
     
 #Define function to plot all FAANG stock historical data on graph with tweet replies  
 def plot_sent_return (stock_ticker, stock_df):
+    #Set date range to make sure stock and tweet data line up
+    start_date = '2010-01-01'
+    end_date = '2020-01-30'
+
     #Record Stock Tick
     stock_tick.append(stock_ticker)
     
@@ -1002,6 +1027,10 @@ stock_tick = []
     
 #Define function to plot all FAANG stock historical data on graph with tweet retweets 
 def plot_sent_return (stock_ticker, stock_df):
+    #Set date range to make sure stock and tweet data line up
+    start_date = '2010-01-01'
+    end_date = '2020-01-30'
+    
     #Record Stock Tick
     stock_tick.append(stock_ticker)
     
@@ -1123,6 +1152,10 @@ num_tweets = []
     
 #Define function to plot all FAANG stock historical data on graph with tweet sentiment   
 def plot_sent_return_name (name, stock_ticker, stock_df):
+    #Set date range to make sure stock and tweet data line up
+    start_date = '2010-01-01'
+    end_date = '2020-01-30'
+
     #Record Stock Tick and name
     stock_tick.append(stock_ticker)
     scrn_name.append(name)
@@ -1298,6 +1331,10 @@ num_tweets = []
     
 #Define function to plot all FAANG stock historical data on graph with tweet sentiment   
 def plot_pos_neg_sent_return_name (name, stock_ticker, stock_df):
+    #Set date range to make sure stock and tweet data line up
+    start_date = '2010-01-01'
+    end_date = '2020-01-30'
+
     #Record Stock Tick and name
     stock_tick.append(stock_ticker)
     scrn_name.append(name)
@@ -1334,13 +1371,13 @@ def plot_pos_neg_sent_return_name (name, stock_ticker, stock_df):
         accuracy_1d.append(sum(pos_neg_1d)/len(pos_neg_1d))
     except:
         accuracy_1d.append(np.nan)
-    print('corr_1d')
-    print(corr)
-    print('Accuracy Percentage_1d')
-    try:
+    #print('corr_1d')
+    #print(corr)
+    #print('Accuracy Percentage_1d')
+    '''try:
         print(sum(pos_neg_1d)/len(pos_neg_1d))
     except:
-        print("No records available")
+        print("No records available")'''
     
     #Sentiment polarity to 10-day return
     for date in data_tweets_trunc.index:
@@ -1360,13 +1397,13 @@ def plot_pos_neg_sent_return_name (name, stock_ticker, stock_df):
         accuracy_10d.append(sum(pos_neg_10d)/len(pos_neg_10d))
     except:
         accuracy_10d.append(np.nan)
-    print('corr_10d')
-    print(corr)
-    print('Accuracy Percentage_10d')
-    try:
+    #print('corr_10d')
+    #print(corr)
+    #print('Accuracy Percentage_10d')
+    '''try:
         print(sum(pos_neg_10d)/len(pos_neg_10d))
     except:
-        print("No records available")
+        print("No records available")'''
     
     #Sentiment polarity to 30-day return
     for date in data_tweets_trunc.index:
@@ -1389,13 +1426,13 @@ def plot_pos_neg_sent_return_name (name, stock_ticker, stock_df):
     #print('Tweets')
     #print(data_tweets)
     #print('length',len(data_tweets))
-    print('corr_30d')
-    print(corr)
-    print('Accuracy Percentage_30d')
-    try:
+    #print('corr_30d')
+    #print(corr)
+    #print('Accuracy Percentage_30d')
+    '''try:
         print(sum(pos_neg_30d)/len(pos_neg_30d))
     except:
-        print("No records available")
+        print("No records available")'''
     
     ''' #Remove graphing function to speed up code
     #Plot the 1-day correlation    
@@ -1426,9 +1463,9 @@ def plot_pos_neg_sent_return_name (name, stock_ticker, stock_df):
 #Plot all correlations
 for name in person_faang:
 #for name in z:
-    print(name)
+    #print(name)
     for stock, df in zip(stock_names, data):
-        print(stock)
+        #print(stock)
         plot_pos_neg_sent_return_name (name, stock, df)    
 
 #Put correlation
