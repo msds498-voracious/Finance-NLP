@@ -5,23 +5,28 @@ Created on Wed Jan 29 06:26:55 2020
 @author: glawson
 """
 
-#Packages for EDA
+# =============================================================================
+# Packages for EDA
+# =============================================================================
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from datetime import timedelta 
-
-#for now use this to get latest yahoo prices
-!pip install yahoo-historical
-#https://github.com/AndrewRPorter/yahoo-historical
 from yahoo_historical import Fetcher
 
-#Display settings
+# =============================================================================
+# Display settings
+# =============================================================================
 pd.set_option('display.max_rows',15)
-pd.set_option('display.max_columns',20)
+pd.set_option('display.max_columns',100)
+pd.set_option('display.max_colwidth',100)
+pd.set_option('display.width', 200)
 
-#**********************************************************************
-#IMPORT TWEET DATA 
+
+# =============================================================================
+# IMPORT TWEET DATA 
+# =============================================================================
 
 #Import data from spreadsheet saved locally
 all_tweets = pd.read_csv('all_tweets.csv')
@@ -37,9 +42,9 @@ print('Number of tweets: ',len(all_tweets))
 #Convert dates to datetime format
 all_tweets['date'] = pd.to_datetime(all_tweets['date'])
 
-#**********************************************************************
-#IMPORT STOCK DATA 
-
+# =============================================================================
+# IMPORT STOCK DATA 
+# =============================================================================
 ticker_fb = Fetcher("FB", [2015,1,1])
 fb_df=ticker_fb.get_historical()
 fb_df.head()
@@ -70,9 +75,12 @@ aapl_df['Date'] = pd.to_datetime(aapl_df['Date'])
 amzn_df['Date'] = pd.to_datetime(amzn_df['Date'])
 nflx_df['Date'] = pd.to_datetime(nflx_df['Date'])
 googl_df['Date'] = pd.to_datetime(googl_df['Date'])
-#**********************************************************************
-#ALL TWEETS BY PERSON
 
+data = [fb_df, aapl_df, amzn_df, nflx_df, googl_df] 
+
+# =============================================================================
+# ALL TWEETS BY PERSON
+# =============================================================================
 #Group by screenname
 counts_by_person = all_tweets.groupby(['screen_name']).size().sort_values(ascending=False)
 person = counts_by_person.index
@@ -101,7 +109,6 @@ ax.boxplot(counts_by_person, vert=False, patch_artist=True, notch=True,
 plt.title('Boxplot of Total Tweets')
 plt.xlabel('Number of Tweets')
 plt.show()
-
 
 #Limit to only FAANG stock tweets
 tweets_comb_stock = pd.DataFrame(columns=('date','screen_name','polarity','fb','appl','amzn','nflx','googl','faang','non-faang'))
@@ -158,9 +165,10 @@ plt.xlabel('Number of Tweets')
 plt.show()
 
 
-#**********************************************************************
-#TWEETS BY FAANG STOCK
 
+# =============================================================================
+# TWEETS BY FAANG STOCK
+# =============================================================================
 #Plot total number of tweets per stock
 fig, ax = plt.subplots(figsize=(15, 4))
 stock_names=('fb','appl','amzn','nflx','googl','faang','non-faang')
@@ -181,10 +189,9 @@ plt.xlabel('Stock')
 plt.xticks(rotation=90)
 plt.show()
 
-
-#**********************************************************************
-#FAANG STOCK TWEETS BY DATE
-
+# =============================================================================
+# FAANG STOCK TWEETS BY DATE
+# =============================================================================
 #Set date plotting parameters
 years = mdates.YearLocator()   # every year
 months = mdates.MonthLocator()  # every month
@@ -210,10 +217,9 @@ def plot_tweets_by_date (stock_ticker):
 for stock in stock_names:
     plot_tweets_by_date(stock)  
 
-
-#**********************************************************************
-#FAANG STOCK TWEETS BY DATE
-
+# =============================================================================
+# FAANG STOCK TWEETS BY DATE
+# =============================================================================
 #Define function to plot all FAANG stock historical data on graph with tweets    
 def plot_tweet_hist_by_date (stock_ticker, stock_df):
     #Prep the Tweet data
@@ -255,13 +261,12 @@ def plot_tweet_hist_by_date (stock_ticker, stock_df):
 #Plot all
 df = [fb_df, aapl_df, amzn_df, nflx_df, googl_df]    
 for stock, df in zip(stock_names, df): 
-    #print(stock)
-    #print(df.head())
+    print(stock)
     plot_tweet_hist_by_date (stock, df)
 
-    
-#**********************************************************************
-#FAANG STOCK MEAN SENTIMENT BY DATE
+# =============================================================================
+# FAANG STOCK MEAN SENTIMENT BY DATE
+# =============================================================================
 
 #Define function to plot all FAANG stock historical data on graph with tweet sentiment   
 def plot_sent_hist_by_date (stock_ticker, stock_df):
@@ -310,32 +315,23 @@ for stock, df in zip(stock_names, df):
 #**********************************************************************
 #FAANG STOCK MEAN SENTIMENT RETURNS
 
+#Create lists for function
+polarity_1d = []
+delta_p_1d = []
+corr_1d = []
+polarity_10d = []
+delta_p_10d = []
+corr_10d = []
+polarity_30d = []
+delta_p_30d = []
+corr_30d = []
+stock_tick = []    
+    
 #Define function to plot all FAANG stock historical data on graph with tweet sentiment   
-# =============================================================================
-# def plot_sent_return (stock_ticker, stock_df):
-#     #Prep the Tweet data
-#     data_tweets = faang_tweets[faang_tweets[stock_ticker]==1]
-#     data_tweets.index = data_tweets['date']
-#     data_tweets_trunc = data_tweets.resample('D').mean()
-#     
-#     #Prep the historic price data
-#     start_date = '2017-07-01'
-#     end_date = '2020-01-30'
-#     mask = (stock_df['Date'] > start_date) & (stock_df['Date'] <= end_date)
-#     data_hist = stock_df.loc[mask]
-#     
-#     for date in data_tweets_trunc:
-#         print(data_hist.loc[date])
-#     
-# #Plot all
-# df = [fb_df, aapl_df, amzn_df, nflx_df, googl_df]    
-# for stock, df in zip(stock_names, df): 
-#     print(stock)
-#     plot_sent_return (stock, df)   
-# =============================================================================
-
-
 def plot_sent_return (stock_ticker, stock_df):
+    #Record Stock Tick
+    stock_tick.append(stock_ticker)
+    
     data_tweets = faang_tweets[faang_tweets[stock_ticker]==1]
     data_tweets.index = data_tweets['date']
     data_tweets_trunc = data_tweets.resample('D').mean()
@@ -348,55 +344,49 @@ def plot_sent_return (stock_ticker, stock_df):
     data_hist = stock_df.loc[mask]
     data_hist.index = data_hist['Date']
     
-    polarity_1d = []
-    delta_p_1d = []
-    polarity_10d = []
-    delta_p_10d = []
-    polarity_30d = []
-    delta_p_30d = []
-    
+    #Sentiment polarity to 1-day return
     for date in data_tweets_trunc.index:
-        #print(data_hist.loc[date])
         try:
-            pol = data_tweets_trunc.loc[date, ['polarity']].max()
+            pol = data_tweets_trunc.loc[date, ['polarity']].mean()
             del_p = data_hist.loc[date + timedelta(days=1)].Close - data_hist.loc[date].Close
             polarity_1d.append(pol)
             delta_p_1d.append(del_p)
-            #delta_p = data_hist.loc[date + timedelta(days=1)].Close - data_hist.loc[date].Close
-            #sentiment = data_tweets_trunc.loc[date, ['polarity']]
-            #print(data_hist.loc[date].Close)
-            #print(data_hist.loc[date])
         except:
             continue
+    corr = np.corrcoef(polarity_1d, delta_p_1d)[1,0]
+    corr_1d.append(corr)
+    print('corr_1d')
+    print(corr)
     
+    #Sentiment polarity to 10-day return
     for date in data_tweets_trunc.index:
-        #print(data_hist.loc[date])
         try:
-            pol = data_tweets_trunc.loc[date, ['polarity']].max()
+            pol = data_tweets_trunc.loc[date, ['polarity']].mean()
             del_p = data_hist.loc[date + timedelta(days=10)].Close - data_hist.loc[date].Close
             polarity_10d.append(pol)
             delta_p_10d.append(del_p)
-            #delta_p = data_hist.loc[date + timedelta(days=1)].Close - data_hist.loc[date].Close
-            #sentiment = data_tweets_trunc.loc[date, ['polarity']]
-            #print(data_hist.loc[date].Close)
-            #print(data_hist.loc[date])
         except:
             continue
-        
+    corr = np.corrcoef(polarity_10d, delta_p_10d)[1,0]
+    corr_10d.append(corr)
+    print('corr_10d')
+    print(corr)
+    
+    #Sentiment polarity to 30-day return
     for date in data_tweets_trunc.index:
-        #print(data_hist.loc[date])
         try:
-            pol = data_tweets_trunc.loc[date, ['polarity']].max()
+            pol = data_tweets_trunc.loc[date, ['polarity']].mean()
             del_p = data_hist.loc[date + timedelta(days=30)].Close - data_hist.loc[date].Close
             polarity_30d.append(pol)
             delta_p_30d.append(del_p)
-            #delta_p = data_hist.loc[date + timedelta(days=1)].Close - data_hist.loc[date].Close
-            #sentiment = data_tweets_trunc.loc[date, ['polarity']]
-            #print(data_hist.loc[date].Close)
-            #print(data_hist.loc[date])
         except:
             continue
+    corr = np.corrcoef(polarity_30d, delta_p_30d)[1,0]
+    corr_30d.append(corr)
+    print('corr_30d')
+    print(corr)
     
+    #Plot the 1-day correlation    
     plt.scatter(polarity_1d, delta_p_1d)
     plt.title('Correlation of %r Sentiment Polarity and 1-Day Return'%stock_ticker)
     plt.xlabel('Sentiment Polarity')
@@ -404,6 +394,7 @@ def plot_sent_return (stock_ticker, stock_df):
     plt.axhline(y=0)
     plt.show()
     
+    #Plot the 10-day correlation 
     plt.scatter(polarity_10d, delta_p_10d)
     plt.title('Correlation of %r Sentiment Polarity and 10-Day Return'%stock_ticker)
     plt.xlabel('Sentiment Polarity')
@@ -411,24 +402,334 @@ def plot_sent_return (stock_ticker, stock_df):
     plt.axhline(y=0)
     plt.show()
     
+    #Plot the 30-day correlation 
     plt.scatter(polarity_30d, delta_p_30d)
     plt.title('Correlation of %r Sentiment Polarity and 30-Day Return'%stock_ticker)
     plt.xlabel('Sentiment Polarity')
     plt.ylabel('Return ($)')
     plt.axhline(y=0)
     plt.show()
+
     
-#Plot all
-df = [fb_df, aapl_df, amzn_df, nflx_df, googl_df]    
-for stock, df in zip(stock_names, df): 
-    print(stock)
+#Plot all correlations
+for stock, df in zip(stock_names, data):
+    #print(stock)
     plot_sent_return (stock, df)    
 
+#Put correlation
+corr_by_stock = pd.DataFrame({'stock_names':stock_tick, 
+                              'Corr_1d': corr_1d, 
+                              'Corr_10d':corr_10d, 
+                              'Corr_30d':corr_30d})
 
-##############################################################################
-#Code from Aniruddha
+
+#**********************************************************************
+#FAANG STOCK MEAN SENTIMENT RETURNS BY PERSON
+
+#Create lists for function
+polarity_1d = []
+delta_p_1d = []
+corr_1d = []
+polarity_10d = []
+delta_p_10d = []
+corr_10d = []
+polarity_30d = []
+delta_p_30d = []
+corr_30d = []
+stock_tick = []  
+scrn_name = []
+num_tweets = []  
     
-#Sybset tweets by stock names 
+#Define function to plot all FAANG stock historical data on graph with tweet sentiment   
+def plot_sent_return_name (name, stock_ticker, stock_df):
+    #Record Stock Tick and name
+    stock_tick.append(stock_ticker)
+    scrn_name.append(name)
+    
+    data_tweets = faang_tweets[faang_tweets['screen_name']==name]
+    data_tweets = data_tweets[data_tweets[stock_ticker]==1]
+    data_tweets.index = data_tweets['date']
+    data_tweets_trunc = data_tweets.resample('D').mean()
+    data_tweets_trunc = data_tweets_trunc[data_tweets_trunc[stock_ticker].notnull()]
+    num_tweets.append(len(data_tweets))
+    
+    #Prep the historic price data
+    start_date = '2017-07-01'
+    end_date = '2020-01-30'
+    mask = (stock_df['Date'] > start_date) & (stock_df['Date'] <= end_date)
+    data_hist = stock_df.loc[mask]
+    data_hist.index = data_hist['Date']
+    
+    #Sentiment polarity to 1-day return
+    for date in data_tweets_trunc.index:
+        try:
+            pol = data_tweets_trunc.loc[date, ['polarity']].mean()
+            del_p = data_hist.loc[date + timedelta(days=1)].Close - data_hist.loc[date].Close
+            polarity_1d.append(pol)
+            delta_p_1d.append(del_p)
+        except:
+            continue
+    corr = np.corrcoef(polarity_1d, delta_p_1d)[1,0]
+    corr_1d.append(corr)
+    print('corr_1d')
+    print(corr)
+    
+    #Sentiment polarity to 10-day return
+    for date in data_tweets_trunc.index:
+        try:
+            pol = data_tweets_trunc.loc[date, ['polarity']].mean()
+            del_p = data_hist.loc[date + timedelta(days=10)].Close - data_hist.loc[date].Close
+            polarity_10d.append(pol)
+            delta_p_10d.append(del_p)
+        except:
+            continue
+    corr = np.corrcoef(polarity_10d, delta_p_10d)[1,0]
+    corr_10d.append(corr)
+    print('corr_10d')
+    print(corr)
+    
+    #Sentiment polarity to 30-day return
+    for date in data_tweets_trunc.index:
+        try:
+            pol = data_tweets_trunc.loc[date, ['polarity']].mean()
+            del_p = data_hist.loc[date + timedelta(days=30)].Close - data_hist.loc[date].Close
+            polarity_30d.append(pol)
+            delta_p_30d.append(del_p)
+        except:
+            continue
+    corr = np.corrcoef(polarity_30d, delta_p_30d)[1,0]
+    corr_30d.append(corr)
+    print('corr_30d')
+    print(corr)
+    
+   
+#Plot all correlations
+for name in person:
+    print(name)
+    for stock, df in zip(stock_names, data):
+        plot_sent_return_name (name, stock, df)    
+
+#Put correlation
+corr_by_stock_name = pd.DataFrame({'Screen_Name': scrn_name,
+                                   'Stock_Names':stock_tick,
+                                   'Num_Tweets': num_tweets,
+                                   'Corr_1d': corr_1d, 
+                                   'Corr_10d':corr_10d, 
+                                   'Corr_30d':corr_30d})
+
+#Tabulate highest correlations by person 
+# =============================================================================
+# print('\nBest Positive Correlation for 1-day Return')
+# print(corr_by_stock_name.nlargest(5, ['Corr_1d'])) 
+# 
+# print('\nBest Negative Correlation for 1-day Return')
+# print(corr_by_stock_name.nsmallest(5, ['Corr_1d']))
+# 
+# print('\nBest Positive Correlation for 10-day Return')
+# print(corr_by_stock_name.nlargest(5, ['Corr_10d']))
+# 
+# print('\nBest Negative Correlation for 10-day Return')
+# print(corr_by_stock_name.nsmallest(5, ['Corr_10d'])) 
+# 
+# print('\nBest Positive Correlation for 30-day Return') 
+# print(corr_by_stock_name.nlargest(5, ['Corr_30d']))
+# 
+# print('\nBest Negative Correlation for 30-day Return')
+# print(corr_by_stock_name.nsmallest(5, ['Corr_30d']))      
+# =============================================================================
+
+#Tabulate highest correlations by person and by stock      
+for stock in stock_names:
+    df = corr_by_stock_name[corr_by_stock_name['Stock_Names']==stock]
+    print('\n*****************************************************************\nStock:  ', stock)
+    
+    print('\nBest Positive Correlation for 1-day Return')
+    print(df.nlargest(5, ['Corr_1d'])) 
+    
+    print('\nBest Negative Correlation for 1-day Return')
+    print(df.nsmallest(5, ['Corr_1d']))
+    
+    print('\nBest Positive Correlation for 10-day Return')
+    print(df.nlargest(5, ['Corr_10d']))
+    
+    print('\nBest Negative Correlation for 10-day Return')
+    print(df.nsmallest(5, ['Corr_10d'])) 
+    
+    print('\nBest Positive Correlation for 30-day Return') 
+    print(df.nlargest(5, ['Corr_30d']))
+    
+    print('\nBest Negative Correlation for 30-day Return')
+    print(df.nsmallest(5, ['Corr_30d']))
+
+# =============================================================================
+# FAANG STOCK POSTIVIVE/NEGATIVE SENTIMENT RETURNS BY PERSON
+# =============================================================================
+#Create lists for function
+polarity_1d = []
+delta_p_1d = []
+corr_1d = []
+pos_neg_1d = []
+accuracy_1d = []
+polarity_10d = []
+delta_p_10d = []
+corr_10d = []
+pos_neg_10d = []
+accuracy_10d = []
+polarity_30d = []
+delta_p_30d = []
+corr_30d = []
+pos_neg_30d = []
+accuracy_30d = []
+stock_tick = []  
+scrn_name = []
+num_tweets = []  
+    
+#Define function to plot all FAANG stock historical data on graph with tweet sentiment   
+def plot_pos_neg_sent_return_name (name, stock_ticker, stock_df):
+    #Record Stock Tick and name
+    stock_tick.append(stock_ticker)
+    scrn_name.append(name)
+    
+    data_tweets = faang_tweets[faang_tweets['screen_name']==name]
+    data_tweets = data_tweets[data_tweets[stock_ticker]==1]
+    data_tweets.index = data_tweets['date']
+    data_tweets_trunc = data_tweets.resample('D').mean()
+    data_tweets_trunc = data_tweets_trunc[data_tweets_trunc[stock_ticker].notnull()]
+    num_tweets.append(len(data_tweets))
+    
+    #Prep the historic price data
+    start_date = '2017-07-01'
+    end_date = '2020-01-30'
+    mask = (stock_df['Date'] > start_date) & (stock_df['Date'] <= end_date)
+    data_hist = stock_df.loc[mask]
+    data_hist.index = data_hist['Date']
+    
+    #Sentiment polarity to 1-day return
+    for date in data_tweets_trunc.index:
+        try:
+            pol = np.where(data_tweets_trunc.loc[date, ['polarity']].mean()>0,1,0)
+            end_date = date + timedelta(days=1)
+            #print('Date:',date)
+            #print('close:',data_hist.truncate(before=end_date).iloc[0]['Close'])# - data_hist.loc[date].Close)
+            #print('orig close:', data_hist.truncate(before=date).iloc[0]['Close'])
+            del_p = np.where(data_hist.truncate(before=end_date).iloc[0]['Close'] - data_hist.truncate(before=date).iloc[0]['Close'] >0,1,0)
+            #print('del_p',del_p)
+            pos_neg = np.where(pol + del_p ==1,0,1)
+            polarity_1d.append(pol)
+            delta_p_1d.append(del_p)
+            pos_neg_1d.append(pos_neg)
+            #print('Difference:',data_hist.truncate(before=end_date).iloc[0]['Close'] - data_hist.truncate(before=date).iloc[0]['Close'])
+        except:
+            continue
+    corr = np.corrcoef(polarity_1d, delta_p_1d)[1,0]
+    corr_1d.append(corr)
+    accuracy_1d.append(sum(pos_neg_1d)/len(pos_neg_1d))
+    print('corr_1d')
+    print(corr)
+    print('Accuracy Percentage_1d')
+    print(sum(pos_neg_1d)/len(pos_neg_1d))
+    
+    #Sentiment polarity to 10-day return
+    for date in data_tweets_trunc.index:
+        try:
+            pol = np.where(data_tweets_trunc.loc[date, ['polarity']].mean()>0,1,0)
+            end_date = date + timedelta(days=10)
+            #print('Date:',date)
+            #print('close:',data_hist.truncate(before=end_date).iloc[0]['Close'])# - data_hist.loc[date].Close)
+            #print('orig close:', data_hist.truncate(before=date).iloc[0]['Close'])
+            del_p = np.where(data_hist.truncate(before=end_date).iloc[0]['Close'] - data_hist.truncate(before=date).iloc[0]['Close'] >0,1,0)
+            #print('del_p',del_p)
+            pos_neg = np.where(pol + del_p ==1,0,1)
+            polarity_10d.append(pol)
+            delta_p_10d.append(del_p)
+            pos_neg_10d.append(pos_neg)
+            #print('Difference:',data_hist.truncate(before=end_date).iloc[0]['Close'] - data_hist.truncate(before=date).iloc[0]['Close'])
+        except:
+            continue
+    corr = np.corrcoef(polarity_10d, delta_p_10d)[1,0]
+    corr_10d.append(corr)
+    accuracy_10d.append(sum(pos_neg_10d)/len(pos_neg_10d))
+    print('corr_10d')
+    print(corr)
+    print('Accuracy Percentage_10d')
+    print(sum(pos_neg_10d)/len(pos_neg_10d))
+    
+    #Sentiment polarity to 30-day return
+    for date in data_tweets_trunc.index:
+        try:
+            pol = np.where(data_tweets_trunc.loc[date, ['polarity']].mean()>0,1,0)
+            end_date = date + timedelta(days=30)
+            #print('Date:',date)
+            #print('close:',data_hist.truncate(before=end_date).iloc[0]['Close'])# - data_hist.loc[date].Close)
+            #print('orig close:', data_hist.truncate(before=date).iloc[0]['Close'])
+            del_p = np.where(data_hist.truncate(before=end_date).iloc[0]['Close'] - data_hist.truncate(before=date).iloc[0]['Close'] >0,1,0)
+            #print('del_p',del_p)
+            pos_neg = np.where(pol + del_p ==1,0,1)
+            polarity_30d.append(pol)
+            delta_p_30d.append(del_p)
+            pos_neg_30d.append(pos_neg)
+            #print('Difference:',data_hist.truncate(before=end_date).iloc[0]['Close'] - data_hist.truncate(before=date).iloc[0]['Close'])
+        except:
+            continue
+    corr = np.corrcoef(polarity_30d, delta_p_30d)[1,0]
+    corr_30d.append(corr)
+    accuracy_30d.append(sum(pos_neg_30d)/len(pos_neg_30d))
+    #print('Tweets')
+    #print(data_tweets)
+    #print('length',len(data_tweets))
+    print('corr_30d')
+    print(corr)
+    print('Accuracy Percentage_30d')
+    print(sum(pos_neg_30d)/len(pos_neg_30d))
+       
+# =============================================================================
+# Plot all correlations
+# =============================================================================
+for name in person:
+#for name in z:
+    print(name)
+    for stock, df in zip(stock_names, data):
+        print(stock)
+        plot_pos_neg_sent_return_name (name, stock, df)    
+
+#Put correlation
+corr_by_pos_neg_stock_name = pd.DataFrame({'Screen_Name': scrn_name,
+                                   'Stock_Names':stock_tick,
+                                   'Num_Tweets': num_tweets,
+                                   'Corr_1d': corr_1d,
+                                   'Accuracy_1d': accuracy_1d,
+                                   'Corr_10d':corr_10d,
+                                   'Accuracy_10d': accuracy_10d,
+                                   'Corr_30d':corr_30d,
+                                   'Accuracy_30d': accuracy_30d,})
+
+#Tabulate highest correlations by person 
+print('\nBest Positive/Negative Accuracy for 1-day Return')
+print(corr_by_pos_neg_stock_name.nlargest(5, ['Accuracy_1d'])) 
+
+print('\nBest Positive/Negative Accuracy for 10-day Return')
+print(corr_by_pos_neg_stock_name.nlargest(5, ['Accuracy_10d']))
+
+print('\nBest Positive/Negative Accuracy for 30-day Return') 
+print(corr_by_pos_neg_stock_name.nlargest(5, ['Accuracy_30d']))
+
+#Tabulate highest correlations by person and by stock      
+for stock in stock_names:
+    df = corr_by_pos_neg_stock_name[corr_by_pos_neg_stock_name['Stock_Names']==stock]
+    print('\n*****************************************************************\nStock:  ', stock)
+    
+    print('\nBest Positive/Negative Accuracy for 1-day Return')
+    print(df.nlargest(5, ['Accuracy_1d'])) 
+    
+    print('\nBest Positive/Negative Accuracy for 10-day Return')
+    print(df.nlargest(5, ['Accuracy_10d']))
+    
+    print('\nBest Positive/Negative Accuracy for 30-day Return') 
+    print(df.nlargest(5, ['Accuracy_30d']))
+
+# =============================================================================
+# Sybset tweets by stock names 
+# =============================================================================
 apple_tweets = pd.concat([all_tweets[all_tweets[' appl '] == 1], all_tweets[all_tweets[' apple '] == 1]], axis = 0)
 apple_tweets['date'] = pd.to_datetime(apple_tweets['date'])
 apple_tweets.index = apple_tweets['date'] 
