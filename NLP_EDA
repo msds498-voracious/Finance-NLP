@@ -1338,15 +1338,17 @@ def plot_pos_neg_sent_return_name (name, stock_ticker, stock_df):
     #Record Stock Tick and name
     stock_tick.append(stock_ticker)
     scrn_name.append(name)
+    print('Name: ', name, 'Ticker: ', stock_ticker)
     
     data_tweets = faang_tweets[faang_tweets['screen_name']==name]
-    data_tweets = faang_tweets[faang_tweets[stock_ticker]==1]
+    data_tweets = data_tweets[data_tweets[stock_ticker]==1]
     data_tweets.index = data_tweets['date']
     mask = (data_tweets.index > start_date) & (data_tweets.index <= end_date)
     data_tweets = data_tweets.loc[mask]
     data_tweets_trunc = data_tweets.resample('D').mean()
     data_tweets_trunc = data_tweets_trunc[data_tweets_trunc[stock_ticker].notnull()]
     num_tweets.append(len(data_tweets))
+
     
     #Prep the historic price data
     mask = (stock_df['Date'] > start_date) & (stock_df['Date'] <= end_date)
@@ -1508,9 +1510,6 @@ for stock in stock_names:
 t = corr_by_pos_neg_stock_name.nlargest(10, ['Accuracy_30d'])
 #print table
 print_table(t)
-
-
-
 
 
 
