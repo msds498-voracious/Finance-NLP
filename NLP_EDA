@@ -15,6 +15,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from datetime import timedelta 
+from dateutil.relativedelta import relativedelta                                                                                                                  
+from datetime import date 
 
 #For making tables
 from plotly.offline import plot
@@ -1580,6 +1582,253 @@ for stock in stock_names:
 t = corr_by_pos_neg_stock_name.nlargest(10, ['Accuracy_1d'])
 #print table
 print_table(t)
+
+#**********************************************************************
+#FAANG STOCK POSTIVIVE/NEGATIVE SENTIMENT RETURNS BY PERSON OVER TIME
+
+#Create lists for function
+polarity_1d = []
+delta_p_1d = []
+corr_1d = []
+pos_neg_1d = []
+accuracy_1d = []
+polarity_10d = []
+delta_p_10d = []
+corr_10d = []
+pos_neg_10d = []
+accuracy_10d = []
+polarity_30d = []
+delta_p_30d = []
+corr_30d = []
+pos_neg_30d = []
+accuracy_30d = []
+stock_tick = []  
+scrn_name = []
+num_tweets = []  
+start_date_list = []
+    
+#Define function to plot all FAANG stock historical data on graph with tweet sentiment   
+def plot_pos_neg_sent_return_name (name, stock_ticker, stock_df, start_date, end_date):
+    #Record Stock Tick and name
+    stock_tick.append(stock_ticker)
+    scrn_name.append(name)
+    print('Name: ', name, ', Ticker: ', stock_ticker)
+    print('start_date', start_date)
+    print('end_date', end_date)
+    
+    data_tweets = faang_tweets[(faang_tweets['screen_name']==name) &
+                           (faang_tweets[stock_ticker]==1)]
+    data_tweets.index = data_tweets['date']
+    mask = (data_tweets.index >= start_date) & (data_tweets.index <= end_date)
+    data_tweets = data_tweets.loc[mask]
+    data_tweets_trunc = data_tweets.resample('D').mean()
+    data_tweets_trunc = data_tweets_trunc[data_tweets_trunc[stock_ticker].notnull()]
+    num_tweets.append(len(data_tweets))
+
+    
+    #Prep the historic price data
+    mask = (stock_df['Date'] >= start_date) & (stock_df['Date'] <= end_date)
+    data_hist = stock_df.loc[mask]
+    data_hist.index = data_hist['Date']
+    
+    #Sentiment polarity to 1-day return
+    polarity_1d_list=[]
+    delta_p_1d_list=[]
+    pos_neg_1d_list=[]
+    for date in data_tweets_trunc.index:
+        try:
+            pol = np.where(data_tweets_trunc.loc[date, ['polarity']].mean()>0,1,0)
+            return_end_date = date + timedelta(days=1)
+            del_p = np.where(data_hist.truncate(before=return_end_date).iloc[0]['Close'] - 
+                             data_hist.truncate(before=date).iloc[0]['Close'] >0,1,0)
+            pos_neg = np.where(pol + del_p ==1,0,1)
+            polarity_1d_list.append(pol)
+            delta_p_1d_list.append(del_p)
+            pos_neg_1d_list.append(pos_neg)
+            print(date, return_end_date)
+            print(pol, del_p, pos_neg)
+        except:
+            continue
+    corr = np.corrcoef(pos_neg_1d_list, delta_p_1d_list)[1,0]
+    corr_1d.append(corr)
+    try:
+        accuracy_1d.append(sum(pos_neg_1d_list)/len(pos_neg_1d_list))
+    except:
+        accuracy_1d.append(np.nan)
+    #print('corr_1d')
+    #print(corr)
+    #print('Accuracy Percentage_1d')
+    '''try:
+        print(sum(pos_neg_1d)/len(pos_neg_1d))
+    except:
+        print("No records available")'''
+    
+    #Sentiment polarity to 10-day return
+    polarity_10d_list=[]
+    delta_p_10d_list=[]
+    pos_neg_10d_list=[]
+    for date in data_tweets_trunc.index:
+        try:
+            pol = np.where(data_tweets_trunc.loc[date, ['polarity']].mean()>0,1,0)
+            return_end_date = date + timedelta(days=10)
+            del_p = np.where(data_hist.truncate(before=return_end_date).iloc[0]['Close'] - 
+                             data_hist.truncate(before=date).iloc[0]['Close'] >0,1,0)
+            pos_neg = np.where(pol + del_p ==1,0,1)
+            polarity_10d_list.append(pol)
+            delta_p_10d_list.append(del_p)
+            pos_neg_10d_list.append(pos_neg)
+        except:
+            continue
+    corr = np.corrcoef(polarity_10d_list, delta_p_10d_list)[1,0]
+    corr_10d.append(corr)
+    try:
+        accuracy_10d.append(sum(pos_neg_10d_list)/len(pos_neg_10d_list))
+    except:
+        accuracy_10d.append(np.nan)
+    #print('corr_10d')
+    #print(corr)
+    #print('Accuracy Percentage_10d')
+    '''try:
+        print(sum(pos_neg_10d)/len(pos_neg_10d))
+    except:
+        print("No records available")'''
+    
+    #Sentiment polarity to 30-day return
+    polarity_30d_list=[]
+    delta_p_30d_list=[]
+    pos_neg_30d_list=[]
+    for date in data_tweets_trunc.index:
+        try:
+            pol = np.where(data_tweets_trunc.loc[date, ['polarity']].mean()>0,1,0)
+            return_end_date = date + timedelta(days=30)
+            del_p = np.where(data_hist.truncate(before=return_end_date).iloc[0]['Close'] - 
+                             data_hist.truncate(before=date).iloc[0]['Close'] >0,1,0)
+            pos_neg = np.where(pol + del_p ==1,0,1)
+            polarity_30d_list.append(pol)
+            delta_p_30d_list.append(del_p)
+            pos_neg_30d_list.append(pos_neg)
+        except:
+            continue
+    corr = np.corrcoef(polarity_30d_list, delta_p_30d_list)[1,0]
+    corr_30d.append(corr)
+    try:
+        accuracy_30d.append(sum(pos_neg_30d_list)/len(pos_neg_30d_list))
+    except:
+        accuracy_30d.append(np.nan)
+    #print('Tweets')
+    #print(data_tweets)
+    #print('length',len(data_tweets))
+    #print('corr_30d')
+    #print(corr)
+    #print('Accuracy Percentage_30d')
+    '''try:
+        print(sum(pos_neg_30d)/len(pos_neg_30d))
+    except:
+        print("No records available")'''
+    
+    ''' #Remove graphing function to speed up code
+    #Plot the 1-day correlation    
+    plt.scatter(polarity_1d, delta_p_1d)
+    plt.title('Correlation of %r Sentiment Polarity and 1-Day Return'%stock_ticker)
+    plt.xlabel('Sentiment Polarity')
+    plt.ylabel('Return ($)')
+    plt.axhline(y=0)
+    plt.show()
+    
+    #Plot the 10-day correlation 
+    plt.scatter(polarity_10d, delta_p_10d)
+    plt.title('Correlation of %r Sentiment Polarity and 10-Day Return'%stock_ticker)
+    plt.xlabel('Sentiment Polarity')
+    plt.ylabel('Return ($)')
+    plt.axhline(y=0)
+    plt.show()
+    
+    #Plot the 30-day correlation 
+    plt.scatter(polarity_30d, delta_p_30d)
+    plt.title('Correlation of %r Sentiment Polarity and 30-Day Return'%stock_ticker)
+    plt.xlabel('Sentiment Polarity')
+    plt.ylabel('Return ($)')
+    plt.axhline(y=0)
+    plt.show()
+    '''
+
+#Set date range
+start_date = date(2015, 1, 1)   
+period_end_date = date(2020, 1, 1)                                                                                                                                              
+
+#Set increments for date range
+day = relativedelta(days=1)                                                                                                                                       
+half = relativedelta(months=6)                                                                                                                                 
+while start_date < period_end_date: 
+    end_date = start_date + half - day
+    #print(start_date + half) 
+    
+    #Plot all correlations
+    #for name in person_faang:
+    for name in z:
+        for stock, df in zip(stock_names, data):
+            #print(stock)
+            #print('Start Date', start_date, 'End Date', end_date)
+            start_date_list.append(start_date)
+            plot_pos_neg_sent_return_name (name, stock, df, start_date.strftime('%m/%d/%Y'), end_date.strftime('%m/%d/%Y'))    
+    start_date += quarter
+
+#Put correlation
+corr_by_pos_neg_stock_name = pd.DataFrame({'Screen_Name': scrn_name,
+                                   'Stock_Names':stock_tick,
+                                   'Start Date':start_date_list,
+                                   'Num_Tweets': num_tweets,
+                                   'Corr_1d': corr_1d,
+                                   'Accuracy_1d': accuracy_1d,
+                                   'Corr_10d':corr_10d,
+                                   'Accuracy_10d': accuracy_10d,
+                                   'Corr_30d':corr_30d,
+                                   'Accuracy_30d': accuracy_30d,})
+
+#Tabulate highest correlations by person 
+print('\nBest Positive/Negative Accuracy for 1-day Return')
+print(corr_by_pos_neg_stock_name.nlargest(5, ['Accuracy_1d'])) 
+
+print('\nBest Positive/Negative Accuracy for 10-day Return')
+print(corr_by_pos_neg_stock_name.nlargest(5, ['Accuracy_10d']))
+
+print('\nBest Positive/Negative Accuracy for 30-day Return') 
+print(corr_by_pos_neg_stock_name.nlargest(5, ['Accuracy_30d']))
+
+#Tabulate highest correlations by person and by stock      
+for stock in stock_names:
+    df = corr_by_pos_neg_stock_name[corr_by_pos_neg_stock_name['Stock_Names']==stock]
+    print('\n*****************************************************\nStock:  ', stock)
+    
+    print('\nBest Positive/Negative Accuracy for 1-day Return')
+    print(df.nlargest(5, ['Accuracy_1d'])) 
+    
+    print('\nBest Positive/Negative Accuracy for 10-day Return')
+    print(df.nlargest(5, ['Accuracy_10d']))
+    
+    print('\nBest Positive/Negative Accuracy for 30-day Return') 
+    print(df.nlargest(5, ['Accuracy_30d']))
+
+#Select the name of the table that you want to print and set it equal
+    #to t below.
+t = corr_by_pos_neg_stock_name.nlargest(10, ['Accuracy_30d'])
+#print table
+print_table(t)
+
+#Plot the results
+#For a specific screen name
+df = corr_by_pos_neg_stock_name[corr_by_pos_neg_stock_name['Screen_Name']=='@GerberKawasaki']
+#For a specific stock
+df = corr_by_pos_neg_stock_name[corr_by_pos_neg_stock_name['Stock_Names']=='fb']
+
+fig, ax = plt.subplots(figsize=(18,6))
+for name, group in df.groupby(['Screen_Name','Stock_Names']):
+    print(group)
+    group.plot(x='Start Date', y='Accuracy_10d', ax=ax, label=name)
+plt.title('Accuracy Over 6-Month Periods')
+plt.xlabel('Date')
+plt.ylabel('Accuracy (%)')
+plt.show()
 
 ##############################################################################
 #Code from Aniruddha
