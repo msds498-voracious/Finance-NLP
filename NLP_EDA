@@ -8,6 +8,7 @@ Created on Wed Jan 29 06:26:55 2020
 
 #**********************************************************************
 #Prepare environment
+#**********************************************************************
 
 #Packages for EDA
 import pandas as pd
@@ -38,6 +39,7 @@ pd.set_option('display.width', 200)
 
 #**********************************************************************
 #IMPORT TWEET DATA 
+#**********************************************************************
 
 path = 'G:/My Drive/MSPA/MSDS 498 - Capstone/Code/'
 
@@ -62,6 +64,7 @@ print('Min Date: ', all_tweets['date'].min())
 
 #**********************************************************************
 #IMPORT STOCK DATA 
+#**********************************************************************
 
 #Use yahoo_historical
 ticker_fb = Fetcher("FB", [2010,1,1])
@@ -101,6 +104,8 @@ data = [fb_df, aapl_df, amzn_df, nflx_df, googl_df]
 
 #**********************************************************************
 #TWITTER DATA CLEANING
+#**********************************************************************
+
 
 #Remove duplicate entries
 print('Number of tweets: ',len(all_tweets))
@@ -111,16 +116,25 @@ all_tweets = all_tweets.reset_index(drop=True)
 
 print('Number of tweets: ',len(all_tweets))
 
+#Create Training and Test datasets
+all_tweets = all_tweets[all_tweets['date']<='2018-12-31']
+test = all_tweets[all_tweets['date']>'2018-12-31']
+
+print('Length of training dataset: ', len(all_tweets)
+print('Length of training dataset: ', len(test))
+
 
 #**********************************************************************
 #DATE RANGE FOR EXPERIEMENT
+#**********************************************************************
 
 #Set date range to make sure stock and tweet data line up
-start_date = '2010-01-01'
-end_date = '2020-01-30'
+start_date = '2018-01-01'
+end_date = '2019-12-31'
 
 #**********************************************************************
 #FUNCTIONS
+#**********************************************************************
 
 #Create function to print tables
 
@@ -133,6 +147,7 @@ def print_table(table):
 
 #**********************************************************************
 #ALL TWEETS BY PERSON
+#**********************************************************************
 
 #Group by screenname
 counts_by_person = all_tweets.groupby(['screen_name']).size().sort_values(ascending=False)
@@ -243,6 +258,7 @@ plt.show()
 
 #**********************************************************************
 #TWEETS BY PERSON AND TWEET ATTRIBUTE
+#**********************************************************************
 
 #Look at likes per person
 person_tot_tweets = []
@@ -326,11 +342,11 @@ person_response_stats = pd.DataFrame({'Screen_Name': person_faang,
                                        'Total_Likes': person_likes_tot,
                                        'Avg_Likes': person_likes_avg,
                                        'Max_Likes':person_likes_max,
-                                       'Min_Likes': person_likes_min,
-                                       'Total_Replies': person_replies_tot,
-                                       'Avg_Replies': person_replies_avg,
-                                       'Max_Replies':person_replies_max,
-                                       'Min_Replies': person_replies_min,
+                                       'Min_Likes': person_likes_min})#,
+                                       #'Total_Replies': person_replies_tot,
+                                       #'Avg_Replies': person_replies_avg,
+                                       #'Max_Replies':person_replies_max,
+                                       #'Min_Replies': person_replies_min,
                                        'Total_Retweets': person_retweets_tot,
                                        'Avg_Retweets': person_retweets_avg,
                                        'Max_Retweets':person_retweets_max,
@@ -358,12 +374,13 @@ print(person_response_stats.nlargest(5, ['Avg_Retweets']))
 
 #Select the name of the table that you want to print and set it equal
     #to t below.
-t = person_response_stats.nlargest(5, ['Total_Retweets'])
+t = person_response_stats.nlargest(5, ['Avg_Likes'])
 #print table
 print_table(t)
     
 #**********************************************************************
 #TWEETS BY FAANG STOCK
+#**********************************************************************
 
 #Plot total number of tweets per stock
 fig, ax = plt.subplots(figsize=(15, 4))
@@ -396,6 +413,7 @@ print('FAANG Tweet Volume by Stock:\n',faang_tweets[['fb','aapl','amzn','nflx','
 
 #**********************************************************************
 #FAANG STOCK TWEETS BY DATE
+#**********************************************************************
 
 #Set date plotting parameters
 years = mdates.YearLocator()   # every year
@@ -428,6 +446,7 @@ for stock in stock_names:
 
 #**********************************************************************
 #FAANG STOCK TWEETS AND PRICE BY DATE
+#**********************************************************************
 
 #Define function to plot all FAANG stock historical data on graph with tweets    
 def plot_tweet_hist_by_date (stock_ticker, stock_df, start_date, end_date):
@@ -479,6 +498,7 @@ for stock, df in zip(stock_names, data):
     
 #**********************************************************************
 #FAANG STOCK SENTIMENT BY DATE
+#**********************************************************************
 
 #Define function to plot all FAANG stock historical data on graph with tweet sentiment   
 def plot_sent_hist_by_date (stock_ticker, stock_df, start_date, end_date):
@@ -520,7 +540,7 @@ def plot_sent_hist_by_date (stock_ticker, stock_df, start_date, end_date):
     
     #Show the plot
     plt.tight_layout()
-    plt.savefig(path+stock_ticker+'_sent_by_price.png')
+    plt.savefig(path+stock_ticker+'_sent_by_price_2018-2019.png')
     plt.show()    
 
 #Plot all
@@ -530,6 +550,7 @@ for stock, df in zip(stock_names, data):
 
 #**********************************************************************
 #FAANG STOCK LIKES BY DATE
+#**********************************************************************
 
 #Define function to plot all FAANG stock historical data on graph with tweet likes  
 def plot_like_by_date (stock_ticker, stock_df, start_date, end_date):
@@ -571,7 +592,7 @@ def plot_like_by_date (stock_ticker, stock_df, start_date, end_date):
     
     #Show the plot
     plt.tight_layout()
-    plt.savefig(path+stock_ticker+'_likes_by_price.png')
+    plt.savefig(path+stock_ticker+'_likes_by_price_2018-2019.png')
     plt.show()    
 
 #Plot all
@@ -581,6 +602,7 @@ for stock, df in zip(stock_names, data):
 
 #**********************************************************************
 #FAANG STOCK REPLIES BY DATE
+#**********************************************************************
 
 #Define function to plot all FAANG stock historical data on graph with tweet replies   
 def plot_replies_by_date (stock_ticker, stock_df, start_date, end_date):
@@ -622,7 +644,7 @@ def plot_replies_by_date (stock_ticker, stock_df, start_date, end_date):
     
     #Show the plot
     plt.tight_layout()
-    plt.savefig(path+stock_ticker+'_replies_by_price.png')
+    plt.savefig(path+stock_ticker+'_replies_by_price_2018-2019.png')
     plt.show()    
 
 #Plot all
@@ -632,6 +654,7 @@ for stock, df in zip(stock_names, data):
 
 #**********************************************************************
 #FAANG STOCK RETWEETS BY DATE
+#**********************************************************************
 
 #Define function to plot all FAANG stock historical data on graph with tweet retweets   
 def plot_retweets_by_date (stock_ticker, stock_df, start_date, end_date):
@@ -673,7 +696,7 @@ def plot_retweets_by_date (stock_ticker, stock_df, start_date, end_date):
     
     #Show the plot
     plt.tight_layout()
-    plt.savefig(path+stock_ticker+'_retweets_by_price.png')
+    plt.savefig(path+stock_ticker+'_retweets_by_price_2018-2019.png')
     plt.show()    
 
 #Plot all
@@ -683,6 +706,7 @@ for stock, df in zip(stock_names, data):
         
 #**********************************************************************
 #FAANG STOCK MEAN SENTIMENT RETURNS
+#**********************************************************************
 
 #Create lists for function
 polarity_1d = []
@@ -813,6 +837,7 @@ print_table(t)
     
 #**********************************************************************
 #FAANG STOCK MEAN LIKES RETURNS
+#**********************************************************************
 
 #Create lists for function
 likes_1d = []
@@ -943,6 +968,7 @@ print_table(t)
     
 #**********************************************************************
 #FAANG STOCK MEAN REPLIES RETURNS
+#**********************************************************************
 
 #Create lists for function
 replies_1d = []
@@ -1073,6 +1099,7 @@ print_table(t)
     
 #**********************************************************************
 #FAANG STOCK MEAN RETWEETS RETURNS
+#**********************************************************************
 
 #Create lists for function
 retweets_1d = []
@@ -1203,6 +1230,7 @@ print_table(t)
       
 #**********************************************************************
 #FAANG STOCK MEAN SENTIMENT RETURNS BY PERSON
+#**********************************************************************
 
 #Create lists for function
 polarity_1d = []
@@ -1381,6 +1409,7 @@ print_table(t)
 
 #**********************************************************************
 #FAANG STOCK POSTIVIVE/NEGATIVE SENTIMENT RETURNS BY PERSON
+#**********************************************************************
 
 #Create lists for function
 polarity_1d = []
@@ -1425,22 +1454,27 @@ def plot_pos_neg_sent_return_name (name, stock_ticker, stock_df, start_date, end
     data_hist.index = data_hist['Date']
     
     #Sentiment polarity to 1-day return
+    polarity_1d_list=[]
+    delta_p_1d_list=[]
+    pos_neg_1d_list=[]
     for date in data_tweets_trunc.index:
         try:
             pol = np.where(data_tweets_trunc.loc[date, ['polarity']].mean()>0,1,0)
-            end_date = date + timedelta(days=1)
-            del_p = np.where(data_hist.truncate(before=end_date).iloc[0]['Close'] - 
+            return_end_date = date + timedelta(days=1)
+            del_p = np.where(data_hist.truncate(before=return_end_date).iloc[0]['Close'] - 
                              data_hist.truncate(before=date).iloc[0]['Close'] >0,1,0)
             pos_neg = np.where(pol + del_p ==1,0,1)
-            polarity_1d.append(pol)
-            delta_p_1d.append(del_p)
-            pos_neg_1d.append(pos_neg)
+            polarity_1d_list.append(pol)
+            delta_p_1d_list.append(del_p)
+            pos_neg_1d_list.append(pos_neg)
+            print(date, return_end_date)
+            print(pol, del_p, pos_neg)
         except:
             continue
-    corr = np.corrcoef(polarity_1d, delta_p_1d)[1,0]
+    corr = np.corrcoef(pos_neg_1d_list, delta_p_1d_list)[1,0]
     corr_1d.append(corr)
     try:
-        accuracy_1d.append(sum(pos_neg_1d)/len(pos_neg_1d))
+        accuracy_1d.append(sum(pos_neg_1d_list)/len(pos_neg_1d_list))
     except:
         accuracy_1d.append(np.nan)
     #print('corr_1d')
@@ -1452,22 +1486,25 @@ def plot_pos_neg_sent_return_name (name, stock_ticker, stock_df, start_date, end
         print("No records available")'''
     
     #Sentiment polarity to 10-day return
+    polarity_10d_list=[]
+    delta_p_10d_list=[]
+    pos_neg_10d_list=[]
     for date in data_tweets_trunc.index:
         try:
             pol = np.where(data_tweets_trunc.loc[date, ['polarity']].mean()>0,1,0)
-            end_date = date + timedelta(days=10)
-            del_p = np.where(data_hist.truncate(before=end_date).iloc[0]['Close'] - 
+            return_end_date = date + timedelta(days=10)
+            del_p = np.where(data_hist.truncate(before=return_end_date).iloc[0]['Close'] - 
                              data_hist.truncate(before=date).iloc[0]['Close'] >0,1,0)
             pos_neg = np.where(pol + del_p ==1,0,1)
-            polarity_10d.append(pol)
-            delta_p_10d.append(del_p)
-            pos_neg_10d.append(pos_neg)
+            polarity_10d_list.append(pol)
+            delta_p_10d_list.append(del_p)
+            pos_neg_10d_list.append(pos_neg)
         except:
             continue
-    corr = np.corrcoef(polarity_10d, delta_p_10d)[1,0]
+    corr = np.corrcoef(polarity_10d_list, delta_p_10d_list)[1,0]
     corr_10d.append(corr)
     try:
-        accuracy_10d.append(sum(pos_neg_10d)/len(pos_neg_10d))
+        accuracy_10d.append(sum(pos_neg_10d_list)/len(pos_neg_10d_list))
     except:
         accuracy_10d.append(np.nan)
     #print('corr_10d')
@@ -1479,22 +1516,25 @@ def plot_pos_neg_sent_return_name (name, stock_ticker, stock_df, start_date, end
         print("No records available")'''
     
     #Sentiment polarity to 30-day return
+    polarity_30d_list=[]
+    delta_p_30d_list=[]
+    pos_neg_30d_list=[]
     for date in data_tweets_trunc.index:
         try:
             pol = np.where(data_tweets_trunc.loc[date, ['polarity']].mean()>0,1,0)
-            end_date = date + timedelta(days=30)
-            del_p = np.where(data_hist.truncate(before=end_date).iloc[0]['Close'] - 
+            return_end_date = date + timedelta(days=30)
+            del_p = np.where(data_hist.truncate(before=return_end_date).iloc[0]['Close'] - 
                              data_hist.truncate(before=date).iloc[0]['Close'] >0,1,0)
             pos_neg = np.where(pol + del_p ==1,0,1)
-            polarity_30d.append(pol)
-            delta_p_30d.append(del_p)
-            pos_neg_30d.append(pos_neg)
+            polarity_30d_list.append(pol)
+            delta_p_30d_list.append(del_p)
+            pos_neg_30d_list.append(pos_neg)
         except:
             continue
-    corr = np.corrcoef(polarity_30d, delta_p_30d)[1,0]
+    corr = np.corrcoef(polarity_30d_list, delta_p_30d_list)[1,0]
     corr_30d.append(corr)
     try:
-        accuracy_30d.append(sum(pos_neg_30d)/len(pos_neg_30d))
+        accuracy_30d.append(sum(pos_neg_30d_list)/len(pos_neg_30d_list))
     except:
         accuracy_30d.append(np.nan)
     #print('Tweets')
@@ -1579,12 +1619,14 @@ for stock in stock_names:
 
 #Select the name of the table that you want to print and set it equal
     #to t below.
-t = corr_by_pos_neg_stock_name.nlargest(10, ['Accuracy_1d'])
+t = corr_by_pos_neg_stock_name.nlargest(10, ['Accuracy_30d'])
 #print table
 print_table(t)
 
+
 #**********************************************************************
 #FAANG STOCK POSTIVIVE/NEGATIVE SENTIMENT RETURNS BY PERSON OVER TIME
+#**********************************************************************
 
 #Create lists for function
 polarity_1d = []
@@ -1764,14 +1806,14 @@ while start_date < period_end_date:
     #print(start_date + half) 
     
     #Plot all correlations
-    #for name in person_faang:
-    for name in z:
+    for name in person_faang:
+    #for name in z:
         for stock, df in zip(stock_names, data):
             #print(stock)
             #print('Start Date', start_date, 'End Date', end_date)
             start_date_list.append(start_date)
             plot_pos_neg_sent_return_name (name, stock, df, start_date.strftime('%m/%d/%Y'), end_date.strftime('%m/%d/%Y'))    
-    start_date += quarter
+    start_date += half
 
 #Put correlation
 corr_by_pos_neg_stock_name = pd.DataFrame({'Screen_Name': scrn_name,
@@ -1815,20 +1857,143 @@ t = corr_by_pos_neg_stock_name.nlargest(10, ['Accuracy_30d'])
 #print table
 print_table(t)
 
-#Plot the results
+
+#GROUP RESULTS BY TOP SCREEN NAMES AND PLOT
+
+#Find the top 5 screen names with best average 10-day return
+df_group = corr_by_pos_neg_stock_name.groupby(['Screen_Name', 'Stock_Names']).mean()
+
+df_temp = df_group.xs('fb',level='Stock_Names').nlargest(10, ['Accuracy_10d'])
+#print table
+print_table(df_temp)
+top_fb_scrnname=df_temp.index.values.tolist()
+
+df_temp = df_group.xs('aapl',level='Stock_Names').nlargest(10, ['Accuracy_10d'])
+#print table
+print_table(df_temp)
+top_aapl_scrnname=df_temp.index.values.tolist()
+
+df_temp = df_group.xs('amzn',level='Stock_Names').nlargest(10, ['Accuracy_10d'])
+#print table
+print_table(df_temp)
+top_amzn_scrnname=df_temp.index.values.tolist()
+
+df_temp = df_group.xs('nflx',level='Stock_Names').nlargest(10, ['Accuracy_10d'])
+#print table
+print_table(df_temp)
+top_nflx_scrnname=df_temp.index.values.tolist()
+
+df_temp = df_group.xs('googl',level='Stock_Names').nlargest(10, ['Accuracy_10d'])
+#print table
+print_table(df_temp)
+top_googl_scrnname=df_temp.index.values.tolist()
+
+
+#PLOT RESULTS
+#For top screen names for fb
+df = corr_by_pos_neg_stock_name[(corr_by_pos_neg_stock_name['Screen_Name'].isin(top_fb_scrnname)) & (corr_by_pos_neg_stock_name['Stock_Names']=='fb')]
+
+fig, ax = plt.subplots(figsize=(18,6))
+for name, group in df.groupby(['Screen_Name','Stock_Names']):
+    group.dropna(subset=['Accuracy_10d'], inplace=True)
+    print(group)
+    group.plot(x='Start Date', y='Accuracy_10d', ax=ax, label=name, marker = 'o')
+plt.title('Top 10 Handles with 10-Day Return Accuracy Over 6-Month Periods for FB')
+plt.xlabel('Date')
+plt.ylabel('Accuracy (%)')
+plt.tight_layout()
+plt.savefig(path+'_6mo_10d_Acc_return_fb.png')
+plt.show()
+
+#For top screen names for aapl
+df = corr_by_pos_neg_stock_name[(corr_by_pos_neg_stock_name['Screen_Name'].isin(top_aapl_scrnname)) & (corr_by_pos_neg_stock_name['Stock_Names']=='aapl')]
+
+fig, ax = plt.subplots(figsize=(18,6))
+for name, group in df.groupby(['Screen_Name','Stock_Names']):
+    group.dropna(subset=['Accuracy_10d'], inplace=True)
+    print(group)
+    group.plot(x='Start Date', y='Accuracy_10d', ax=ax, label=name, marker = 'o')
+plt.title('Top 10 Handles with 10-Day Return Accuracy Over 6-Month Periods for AAPL')
+plt.xlabel('Date')
+plt.ylabel('Accuracy (%)')
+plt.tight_layout()
+plt.savefig(path+'_6mo_10d_Acc_return_fb.png')
+plt.show()
+
+#For top screen names for amzn
+df = corr_by_pos_neg_stock_name[(corr_by_pos_neg_stock_name['Screen_Name'].isin(top_amzn_scrnname)) & (corr_by_pos_neg_stock_name['Stock_Names']=='amzn')]
+
+fig, ax = plt.subplots(figsize=(18,6))
+for name, group in df.groupby(['Screen_Name','Stock_Names']):
+    group.dropna(subset=['Accuracy_10d'], inplace=True)
+    print(group)
+    group.plot(x='Start Date', y='Accuracy_10d', ax=ax, label=name, marker = 'o')
+plt.title('Top 10 Handles with 10-Day Return Accuracy Over 6-Month Periods for AMZN')
+plt.xlabel('Date')
+plt.ylabel('Accuracy (%)')
+plt.tight_layout()
+plt.savefig(path+'_6mo_10d_Acc_return_fb.png')
+plt.show()
+
+#For top screen names for nflx
+df = corr_by_pos_neg_stock_name[(corr_by_pos_neg_stock_name['Screen_Name'].isin(top_nflx_scrnname)) & (corr_by_pos_neg_stock_name['Stock_Names']=='nflx')]
+
+fig, ax = plt.subplots(figsize=(18,6))
+for name, group in df.groupby(['Screen_Name','Stock_Names']):
+    group.dropna(subset=['Accuracy_10d'], inplace=True)
+    print(group)
+    group.plot(x='Start Date', y='Accuracy_10d', ax=ax, label=name, marker = 'o')
+plt.title('Top 10 Handles with 10-Day Return Accuracy Over 6-Month Periods for NFLX')
+plt.xlabel('Date')
+plt.ylabel('Accuracy (%)')
+plt.tight_layout()
+plt.savefig(path+'_6mo_10d_Acc_return_fb.png')
+plt.show()
+
+#For top screen names for googl
+df = corr_by_pos_neg_stock_name[(corr_by_pos_neg_stock_name['Screen_Name'].isin(top_googl_scrnname)) & (corr_by_pos_neg_stock_name['Stock_Names']=='googl')]
+
+fig, ax = plt.subplots(figsize=(18,6))
+for name, group in df.groupby(['Screen_Name','Stock_Names']):
+    group.dropna(subset=['Accuracy_10d'], inplace=True)
+    print(group)
+    group.plot(x='Start Date', y='Accuracy_10d', ax=ax, label=name, marker = 'o')
+plt.title('Top 10 Handles with 10-Day Return Accuracy Over 6-Month Periods for GOOGL')
+plt.xlabel('Date')
+plt.ylabel('Accuracy (%)')
+plt.tight_layout()
+plt.savefig(path+'_6mo_10d_Acc_return_fb.png')
+plt.show()
+
+
+#PLUG IN SPECIFIC SCREEN NAME OR STOCK
 #For a specific screen name
 df = corr_by_pos_neg_stock_name[corr_by_pos_neg_stock_name['Screen_Name']=='@GerberKawasaki']
+
+fig, ax = plt.subplots(figsize=(18,6))
+for name, group in df.groupby(['Screen_Name','Stock_Names']):
+    group.dropna(subset=['Accuracy_10d'], inplace=True)
+    print(group)
+    group.plot(x='Start Date', y='Accuracy_10d', ax=ax, label=name, marker = 'o')
+plt.title('Accuracy Over 6-Month Periods')
+plt.xlabel('Date')
+plt.ylabel('Accuracy (%)')
+plt.show()
 #For a specific stock
 df = corr_by_pos_neg_stock_name[corr_by_pos_neg_stock_name['Stock_Names']=='fb']
 
 fig, ax = plt.subplots(figsize=(18,6))
 for name, group in df.groupby(['Screen_Name','Stock_Names']):
+    group.dropna(subset=['Accuracy_10d'], inplace=True)
     print(group)
-    group.plot(x='Start Date', y='Accuracy_10d', ax=ax, label=name)
+    group.plot(x='Start Date', y='Accuracy_10d', marker='o', linestyle='-', ax=ax, label=name)
 plt.title('Accuracy Over 6-Month Periods')
 plt.xlabel('Date')
 plt.ylabel('Accuracy (%)')
 plt.show()
+
+
+
 
 ##############################################################################
 #Code from Aniruddha
